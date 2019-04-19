@@ -24,12 +24,13 @@ def readCSVFile(filename):
             # extracting field names through first row
             fields = csvreader.next()
 
-            # extracting each data row one by one
+            # extracting each data row containing country/hip-hop lyrics, one by one
             for entry in csvreader:
-                entries.append(entry)
+                # if the genre field is "country" or "hip-hop"
+                if ((entry[4] == "Country") or (entry[4] == "Hip-Hop")):
+                    print("Genre: " + str(entry[4]))
+                    entries.append(entry)
 
-            # get total number of rows
-            print("Total no. of rows: %d"%(csvreader.line_num))
 
         # printing the field names
         print('Field names are: ' + ','.join(field for field in fields))
