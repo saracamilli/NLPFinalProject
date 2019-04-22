@@ -29,7 +29,7 @@ def filter(inputWord):
 # Computes n-gram counts for any n for any given corpus
 # Input: integer n, corpus text filename
 # Output: count of n-word sequences
-def ngramCounts(corpusFile, n):
+def ngramCounts(textBlock, n):
     
     myCountDict = {}                        # will hold all the n-grams and their counts
                                                     
@@ -37,7 +37,7 @@ def ngramCounts(corpusFile, n):
     # to its dictionary. If it already exists in the dictionary, update
     # its count
     counter = 0
-    for word in corpusFile:             # loop through all sentences in file
+    for word in textBlock:             # loop through all sentences in file
         currNGram = []                      # will be used to hold the current n-gram
                                                 # (under construction)
         currNGramStr = ""                   # will hold the converted string version of the n-gram
@@ -45,10 +45,10 @@ def ngramCounts(corpusFile, n):
         currNGram.append(filter(word))      # filter the word and add it to current n-gram
 
         # If the end of the file has not yet been reached...
-        if (counter + n <= len(corpusFile)):                 
+        if (counter + n <= len(textBlock)):                 
             endIndex = counter + n
             for theNext in range(counter+1, endIndex):        # loop through next n-1 subsequent words
-                currNGram.append(corpusFile[theNext])          # put all these words together into an n-gram
+                currNGram.append(textBlock[theNext])          # put all these words together into an n-gram
             currNGramStr = ' '.join(str(w) for w in currNGram)          # convert to a string
             currNGramStr.replace("[","").replace("]","").replace("'","")
 
@@ -67,3 +67,10 @@ def ngramCounts(corpusFile, n):
 
     # Return this dictionary with all n-grams and their counts
     return myCountDict
+
+# Extract counts of keyword features
+def extractKeywordFeatures(textBlock):
+
+    # Get these from the Internet?
+    hipHopKeywords =[]
+    countryKeywords = []
