@@ -47,6 +47,8 @@ def readCSVFile(filename):
         print("Filename requested: " + filename)
         exit(1)
 
+    return entries
+
 ###############################################################################################################
 if __name__ == "__main__":
     # execute only if run as a script
