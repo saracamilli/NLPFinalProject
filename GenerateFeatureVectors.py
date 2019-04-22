@@ -26,7 +26,7 @@ def filter(inputWord):
 	return (filteredWord)
 
 
-# Computes n-gram and (n-1)-gram counts for any n for any given corpus
+# Computes n-gram counts for any n for any given corpus
 # Input: integer n, corpus text filename
 # Output: count of n-word sequences
 def ngramCounts(corpusFile, n):
