@@ -4,8 +4,15 @@ import csv
 import operator
 import sys
 
+from GenerateFeatureVectors import generateTrainingFeatureVectors
+
 def main():
-    readCSVFile("lyrics.csv")
+    entries = readCSVFile("lyrics.csv")
+    featureVects = generateTrainingFeatureVectors(entries)
+
+    hipHopFeatureVects = featureVects[0]
+    countryFeatureVects = featureVects[1]
+
 
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open

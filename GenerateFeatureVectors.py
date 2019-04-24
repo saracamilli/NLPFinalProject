@@ -7,28 +7,57 @@ from nltk.tokenize import PunktSentenceTokenizer,sent_tokenize, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 
-# Given an input word, returns a token that is "stemmed" & "lemmatized" (contains only
-# the morphologically correct root word of the original word)
-def filter(inputWord):
+#################################################################################################################
+# Generate feature vectors using n-gram counts and keywords (using helpers), then returns these feature vectors 
+# as a list. These will be used to create the arff file to feed to weka's machine learning classifier
+#################################################################################################################
+def generateTrainingFeatureVectors(entries):
 
-	filteredWord = ""		# Will hold the new root word from orig. word
+    # Lists of all the training feature vectors for country and hip hop (consists of both n-gram features
+    # and keyword features)
+    # TODO: is this the way to go? I kinda forget how this is supposed to work, please help
+    allCountryVectors = []
+    allHipHopVectors = []
 
-	lemmatizer = WordNetLemmatizer()
-	porterStemmer = PorterStemmer()
+    # Loop through all entries 
+    for entry in entries:
 
-	stopWords = set(stopwords.words("english"))		# set stop words (high frequency words that don't contribute
-													# to meaning of sentence, such as 'a', 'the', 'an', etc.)
+        # Get n-gram features
+        ngramVects = getNGramFeatures(entry)
 
-	if (inputWord not in stopWords):					# if not a stop word
-		psw = porterStemmer.stem(inputWord)				# stem the word
-		filteredWord = lemmatizer.lemmatize(psw)	# append the lemmatized and stemmed word
+        # Get keyword features
+        keywordVects = extractKeywordFeatures(entry)
 
-	return (filteredWord)
+        # If this is a hip hop lyrical block, append the vectors to this list
+        if (entry[4] == "Hip Hop"):
+            allHipHopVectors.append(ngramVects).append(keywordVects)
+        # Otherwise, this is a country lyrical block
+        else:
+            allCountryVectors.append(ngramVects).append(keywordVects)
+
+    return(allHipHopVectors, allCountryVectors)
 
 
+#################################################################################################################
+# Computes n-gram feature vectors for unigrams, bigrams, and trigrams in the training lyrical text
+# Input: a block of training lyrical text from either country or hip hop
+# Output: unigram, bigram, and trigram feature vectors
+# TODO: do we want to use the n-gram counts somehow?
+#################################################################################################################
+def getNGramFeatures(textBlock):
+
+    # Generate lists of all the unigrams, bigrams, and trigrams in the given training lyrical block
+    unigrams = list(ngramCounts(textBlock, 1).keys())
+    bigrams = list(ngramCounts(textBlock, 2).keys())
+    trigrams = list(ngramCounts(textBlock, 3).keys())
+
+    return(unigrams, bigrams, trigrams)
+
+#################################################################################################################
 # Computes n-gram counts for any n for any given corpus
 # Input: integer n, corpus text filename
 # Output: count of n-word sequences
+#################################################################################################################
 def ngramCounts(textBlock, n):
     
     myCountDict = {}                        # will hold all the n-grams and their counts
@@ -68,11 +97,11 @@ def ngramCounts(textBlock, n):
     # Return this dictionary with all n-grams and their counts
     return myCountDict
 
-
-# Create feature vectors from the extracted n-grams
-
-
-# Extract counts of keyword features given a text block
+#################################################################################################################
+# Given a text block, extracts presence of keywords for both hip hop and country features and creates two 
+# feature vectors which it returns as (hip hop vector, country vector)
+# TODO: should we change this to frequency, or is presence good enough?
+#################################################################################################################
 def extractKeywordFeatures(textBlock):
 
     # Extracted from the Internet - need more hip hop keywords?
@@ -110,3 +139,22 @@ def extractKeywordFeatures(textBlock):
 
     return(hipHopFeatureVect, countryFeatureVect)
 
+#################################################################################################################
+# Given an input word, returns a token that is "stemmed" & "lemmatized" (contains only
+# the morphologically correct root word of the original word)
+#################################################################################################################
+def filter(inputWord):
+
+	filteredWord = ""		# Will hold the new root word from orig. word
+
+	lemmatizer = WordNetLemmatizer()
+	porterStemmer = PorterStemmer()
+
+	stopWords = set(stopwords.words("english"))		# set stop words (high frequency words that don't contribute
+													# to meaning of sentence, such as 'a', 'the', 'an', etc.)
+
+	if (inputWord not in stopWords):					# if not a stop word
+		psw = porterStemmer.stem(inputWord)				# stem the word
+		filteredWord = lemmatizer.lemmatize(psw)	# append the lemmatized and stemmed word
+
+	return (filteredWord)
