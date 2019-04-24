@@ -68,7 +68,11 @@ def ngramCounts(textBlock, n):
     # Return this dictionary with all n-grams and their counts
     return myCountDict
 
-# Extract counts of keyword features
+
+# Create feature vectors from the extracted n-grams
+
+
+# Extract counts of keyword features given a text block
 def extractKeywordFeatures(textBlock):
 
     # Extracted from the Internet - need more hip hop keywords?
@@ -81,3 +85,28 @@ def extractKeywordFeatures(textBlock):
             "little", "away", "dirt", "town", "chew", "whoa", "plane", "southern", "south" \
                 "redneck", "springsteen", "cruise", "truck", "headlights", "town" \
                     "radio", "hey", "rolling", "song", "round", "til", "lane", "wind"]
+    
+    # Define and initialize feature vectors with 0's
+    hipHopFeatureVect = []
+    for i in range(len(hipHopKeywords)): hipHopFeatureVect.append(0)
+    countryFeatureVect = []
+    for i in range(len(countryKeywords)): countryFeatureVect.append(0)
+
+    # Update the feature vectors
+        # NOTE: the words are not filtered because, esp. in the case of hip hop, the 
+        # suffixes can be meaningful (i.e. balling, not ball)
+    for word in textBlock:
+        # Check if the current word is in hip hop keywords list
+        if word in hipHopKeywords:
+            # If it is, replace its 0 in the vector with a 1
+            index = hipHopKeywords.index(word)
+            hipHopFeatureVect[index] = 1
+
+        # Check if the current word is in country keywords list
+        if word in countryKeywords:
+            # If it is, replace its 0 in the vector with a 1
+            index = countryKeywords.index(word)
+            countryFeatureVect[index] = 1
+
+    return(hipHopFeatureVect, countryFeatureVect)
+
