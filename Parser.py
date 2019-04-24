@@ -13,6 +13,12 @@ def main():
     hipHopFeatureVects = featureVects[0]
     countryFeatureVects = featureVects[1]
 
+    # TODO: somehow fill this into the afffilecreation func
+
+    # Assume that the tester file is passed in via the command file - parse it somehow?
+    testFile = sys.argv[1]
+    #parsedFile =
+
 
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open
@@ -55,6 +61,26 @@ def readCSVFile(filename):
         exit(1)
 
     return entries
+
+###############################################################################################################
+# Parses the input file with lyrics given by the user who wants to classify them by genre (must be in the 
+# specific format giving in the README)
+###############################################################################################################
+def parseTesterFile(testFile):
+    try:
+        f = open(testFile)
+        parsedFile = []
+
+        #TODO: FILL THIS IN
+
+        f.close()
+        return(parsedFile)
+
+    except IOError:
+        print("Error: Cannot open the file containing the tester data.")
+        print("Filename requested: " + testFile)
+        exit(1)
+
 
 ###############################################################################################################
 if __name__ == "__main__":
