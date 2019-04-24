@@ -71,6 +71,13 @@ def ngramCounts(textBlock, n):
 # Extract counts of keyword features
 def extractKeywordFeatures(textBlock):
 
-    # Get these from the Internet?
-    hipHopKeywords =[]
-    countryKeywords = []
+    # Extracted from the Internet - need more hip hop keywords?
+    hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
+        "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
+            "never", "fuck", "hit", "money", "ass", "big", "real"]
+    
+    countryKeywords = ["ride", "baby", "oh", "tobacco", "windows", "blown", \
+        "road", "memory", "windows", "drunk", "got", "know", "highway", "cold", "beer" \
+            "little", "away", "dirt", "town", "chew", "whoa", "plane", "southern", "south" \
+                "redneck", "springsteen", "cruise", "truck", "headlights", "town" \
+                    "radio", "hey", "rolling", "song", "round", "til", "lane", "wind"]
