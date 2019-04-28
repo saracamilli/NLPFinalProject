@@ -15,6 +15,7 @@ def readCSVFile(filename):
 
     fields = []
     entries = []
+    # use a dictionary pairing its classification "country" or "hip-hop" to its value (lyrics)
 
     try:
         with open(filename, 'r') as lyricsFile:
