@@ -1,17 +1,14 @@
 # Name: Palmer Robins & Sara Camili
 
 import csv
-import array as arr
 
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open
 # the file and return a list
 ###############################################################################################################
 def readCSVFile(filename):
-
-    fields = []
+    print ("Reading in the training csv file...")
     entries = []
-    # use a dictionary pairing its classification "country" or "hip-hop" to its value (lyrics)
 
     try:
         with open(filename, 'r') as lyricsFile:
@@ -23,20 +20,24 @@ def readCSVFile(filename):
 
             # extracting each data row containing country/hip-hop lyrics, one by one
             for entry in csvreader:
-                data = [entry[0], entry[1], entry[2], entry[3], entry[4], entry[5]]
                 # if the genre field is "country" or "hip-hop"
-                if ((entry[4] == "Country") or (entry[4] == "Hip-Hop")):
-                    # print("Genre: " + str(entry[4]))
-                    entries.append(data)
-
-
-        # printing the field names
-        print('Field names are: ' + ','.join(field for field in fields))
+                if entry[4] == "Country" or entry[4] == "Hip-Hop":
+                    sentences = entry[5].splitlines()
+                    for line in sentences:
+                        if len(line) < 20 or len(line) > 300:
+                            continue
+                        else:
+                            if (entry[4] == "Country"):
+                                entries.append("c: " + line)
+                            else:
+                                entries.append("h: " + line)
 
     except IOError:
         print("Error: Cannot open the corpus containing the training data.")
         print("Filename requested: " + filename)
         exit(1)
+
+    print("Done reading the training file!")
 
     return entries
 
