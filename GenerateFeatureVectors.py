@@ -13,7 +13,7 @@ nltk.download('wordnet')
 # which will be used to classify new tester data
 # Input: hip hop lyrical sentences, country lyrical sentences in list form
 #################################################################################################################
-def generateTrainingLanguageModels(hipHopData, countryData):
+def generateTrainingDicts_LanguageModels(hipHopData, countryData):
 
     hipHopBigramProbDict = createBigramProbabilityDict(hipHopData)
     hipHopUnigramProbDict = createUnigramProbabilityDict(hipHopData)
@@ -28,7 +28,7 @@ def generateTrainingLanguageModels(hipHopData, countryData):
 # and trigrams in training text
 # Output: unigram, bigram, and trigram dictionaries with the Bayes probability of each unigram, bigram, or trigram
 #################################################################################################################
-def getProbabilities_BAYES(hipHopData, countryData):
+def generateTrainingDicts_Bayes(hipHopData, countryData):
 
     # Get unigram counts of both 
     hipHopCounts = unigramCounts(hipHopData)

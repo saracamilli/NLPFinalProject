@@ -3,7 +3,8 @@
 import csv
 
 from Parser import readCSVFile
-from GenerateFeatureVectors import generateTrainingFeatureVectors
+from GenerateFeatureVectors import generateTrainingDicts_LanguageModels, generateTrainingDicts_Bayes
+from handleTestLyrics import classifyLyric
 
 def main():
 
@@ -21,16 +22,19 @@ def main():
     # print("Entries labeled as country: " + str(len(country_lyrics)))
     # print("Entries labeled as hip-hop: " + str(len(hiphop_lyrics)))
 
-    featureVects = generateTrainingFeatureVectors(country_lyrics, hiphop_lyrics)
+    # Generate probability dictionaries for unigrams and bigrams using language models
+    LM_dictionaries = generateTrainingDicts_LanguageModels(hiphop_lyrics, country_lyrics)
 
-    hipHopFeatureVects = featureVects[0]
-    countryFeatureVects = featureVects[1]
-
-    # TODO: somehow fill this into the afffilecreation func
+    # Generate probability dictionaries using a Bayes model
+    bayes_dictionaries = generateTrainingDicts_Bayes(hiphop_lyrics, country_lyrics)
 
     # Assume that the tester file is passed in via the command file - parse it somehow?
     testFile = sys.argv[1]
-    #parsedFile =
+
+    # Use these probability dictionaries to classify new lyrics
+    for item in testFile:
+        classification = classifyLyric(item, LM_dictionaries, bayes_dictionaries)
+        print(classification)           #TODO: what do we want to do with the result
 
 ###############################################################################################################
 if __name__ == "__main__":

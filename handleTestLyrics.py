@@ -10,12 +10,29 @@
 # Input: a lyrical sentence of unknown genre
 # Output: a classification string of "hip hop" or "country"
 #################################################################################################################
-def generateTesterFeatureVectors(sentence):
+def classifyLyric(sentence, LM_dictionaries, bayes_dictionaries):
 
     # Get keyword features
     keywordVects = extractKeywordFeatures(sentence)
 
-    # TODO: finish this function
+    # Get language model features
+    bigram_hipHop_dict = LM_dictionaries[0]
+    unigram_hipHop_dict = LM_dictionaries[1]
+    bigram_country_dict = LM_dictionaries[2]
+    unigram_country_dict = LM_dictionaries[3]
+
+    bigramProbs = calculateSongProbability_LANG_MODEL(sentence, bigram_hipHop_dict, bigram_country_dict, "bigram")
+    unigramProbs = calculateSongProbability_LANG_MODEL(sentence, unigram_hipHop_dict, unigram_country_dict, "unigram")
+
+    # Get Bayes features
+    bayes_hipHop_dict = bayes_dictionaries[0]
+    bayes_country_dict = bayes_dictionaries[1]
+
+    bayes_hipHop_Prob = calculateSongProbability_BAYES(sentence, bayes_hipHop_dict)
+    bayes_country_Prob = calculateSongProbability_BAYES(sentence, bayes_country_dict)
+
+    # NOW, SOMEHOW COMBINE ALL THESE PROBABILTIES IN A MEANINGFUL WAY
+
 
 #################################################################################################################
 # Given a new tester sentence, this helper function uses the probability dictionaries to compute the probability
@@ -23,16 +40,12 @@ def generateTesterFeatureVectors(sentence):
 # line and computing a probability of that bi/unigram being in each category using the Katz-Backoff probabilities
 # in the dictionary
 #################################################################################################################
-def calculateSongProbability_LANG_MODEL(sentence, probDicts, bigramOrUnigram):
+def calculateSongProbability_LANG_MODEL(sentence, hipHopProbDict, countryProbDict, bigramOrUnigram):
 
     currentGram = ""                  # will hold the current bigram
 
     totalProb_hipHop = 1
     totalProb_country = 1
-
-    # Separate out the two dictionaries
-    hipHopProbDict = probDicts[0]
-    countryProbDict = probDicts[1]
 
     # Loop through all bigrams in the line and retrieve their probability in each dictionary
     counter = 0
