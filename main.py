@@ -24,13 +24,14 @@ def main():
 
     # Use the genre label to insert each lyric into the country or hip-hop dataset
     print("Classifying training data...")
-    for lyric in entries:
+    for lyric in testingEntries:
         if (lyric[0] == 'c'):
             lyric = lyric[3:]
             country_lyrics.append(lyric)
         else:
             lyric = lyric[3:]
             hiphop_lyrics.append(lyric)
+
     print("Done classifying training data!")
     print("Hip-Hop lyric count: " + str(len(hiphop_lyrics)))
     print("Country lyric count: " + str(len(country_lyrics)))
@@ -64,8 +65,10 @@ def main():
 
     # Use these probability dictionaries to classify new lyrics
     for entry in testingEntries:
-        classification = classifyLyric(item, LM_dictionaries, bayes_dictionaries)
-        print(classification)           # TODO: what do we want to do with the result
+        entry = entry[3:]
+        classification = classifyLyric(entry, LM_dictionaries, bayes_dictionaries)
+        print("Lyric:  " + entry)
+        print("Classification:  " + str(classification) + "\n")           # TODO: what do we want to do with the result
 
 def formatText(lyrics):
     formattedLyrics = []
