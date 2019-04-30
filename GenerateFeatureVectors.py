@@ -8,153 +8,208 @@ from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 
 #################################################################################################################
-# Generate feature vectors using n-gram counts and keywords (using helpers), then returns these feature vectors 
-# as a list. These will be used to create the arff file to feed to weka's machine learning classifier
+# Given lyrical sentences in both hip hop and country, generate bigram and unigram probability dictionaries
+# which will be used to classify new tester data
+# Input: hip hop lyrical sentences, country lyrical sentences in list form
 #################################################################################################################
-def generateTrainingFeatureVectors(entries):
+def generateTrainingLanguageModels(hipHopData, countryData):
 
-    # Lists of all the training feature vectors for country and hip hop (consists of both n-gram features
-    # and keyword features)
-    # TODO: is this the way to go? I kinda forget how this is supposed to work, please help
-    allCountryVectors = []
-    allHipHopVectors = []
+    hipHopBigramProbDict = createBigramProbabilityDict(hipHopData)
+    hipHopUnigramProbDict = createUnigramProbabilityDict(hipHopData)
+    countryBigramProbDict = createBigramProbabilityDict(countryData)
+    countryUnigramProbDict = createUnigramProbabilityDict(countryData)
 
-    # Loop through all entries 
-    for entry in entries:
-
-        # Get n-gram features
-        ngramVects = getNGramFeatures(entry)
-
-        # Get keyword features
-        keywordVects = extractKeywordFeatures(entry)
-
-        # If this is a hip hop lyrical block, append the vectors to this list
-        if (entry[4] == "Hip Hop"):
-            allHipHopVectors.append(ngramVects).append(keywordVects)
-        # Otherwise, this is a country lyrical block
-        else:
-            allCountryVectors.append(ngramVects).append(keywordVects)
-
-    return(allHipHopVectors, allCountryVectors)
-
+    return(hipHopBigramProbDict, hipHopUnigramProbDict, countryBigramProbDict, countryUnigramProbDict)
 
 #################################################################################################################
-# Computes n-gram feature vectors for unigrams, bigrams, and trigrams in the training lyrical text
-# Input: a block of training lyrical text from either country or hip hop
-# Output: unigram, bigram, and trigram feature vectors
-# TODO: do we want to use the n-gram counts somehow?
+# Computes unigram and bigram Bayes probability dictionary for the training lyrical text
+# Input: a block of training lyrical sentences from either country or hip hop, and total counts of unigrams, bigrams, 
+# and trigrams in training text
+# Output: unigram, bigram, and trigram dictionaries with the Bayes probability of each unigram, bigram, or trigram
 #################################################################################################################
-def getNGramFeatures(textBlock):
+def getProbabilities_BAYES(hipHopData, countryData):
 
-    # Generate lists of all the unigrams, bigrams, and trigrams in the given training lyrical block
-    unigrams = list(ngramCounts(textBlock, 1).keys())
-    bigrams = list(ngramCounts(textBlock, 2).keys())
-    trigrams = list(ngramCounts(textBlock, 3).keys())
+    # Get unigram counts of both 
+    hipHopCounts = unigramCounts(hipHopData)
+    countryCounts = unigramCounts(countryData)
 
-    return(unigrams, bigrams, trigrams)
+    # Get the number of unigrams in the text
+    numberOfUnigrams = len(hipHopCounts.items()) + len(countryCounts.items())
+
+    # Probability for all words in plot sentences
+    hipHopUnigramProbabilityDictionary = {}
+    countryUnigramProbabilityDictionary = {}
+
+    for word in hipHopCounts.keys():
+        prob = hipHopCounts.get(word) / numberOfUnigrams
+        hipHopUnigramProbabilityDictionary.update({word : prob})
+
+    # Probability for all words in review sentences
+    for word in countryCounts.keys():
+        prob = countryCounts.get(word) / numberOfUnigrams
+        countryUnigramProbabilityDictionary.update({word : prob})
+
+    return(hipHopUnigramProbabilityDictionary, countryUnigramProbabilityDictionary)
+
+###########################################################################################################
+################################# SORTING & PROBABILITY FUNCTIONS #########################################
+###########################################################################################################
 
 #################################################################################################################
-# Computes n-gram counts for any n for any given corpus
-# Input: integer n, corpus text filename
-# Output: count of n-word sequences
+# Computes all bigrams and their counts in the given text
+# Input: training or test text file
+# Output: a dictionary of all bigrams and their counts
 #################################################################################################################
-def ngramCounts(textBlock, n):
+def bigramCounts(sentences):
     
-    myCountDict = {}                        # will hold all the n-grams and their counts
+    myBigramDict = {}                        # will hold all the bigrams and their counts
                                                     
-    # Loop through and find all the possible n-grams, adding them
-    # to its dictionary. If it already exists in the dictionary, update
-    # its count
+    # Loop through and find all the possible bigrams, adding them
+    # to its dictionary. If it already exists in the dictionary, update its count
     counter = 0
-    for word in textBlock:             # loop through all sentences in file
-        currNGram = []                      # will be used to hold the current n-gram
-                                                # (under construction)
-        currNGramStr = ""                   # will hold the converted string version of the n-gram
+    for sentence in sentences:              # loop through all sentences in input
+        sentence = sentence.split()         # split sentence into words
+        for word in sentence:               # loop through all words in sentence
+            new = {}                            # will hold new dictionary entry
+            currBigram = []                      # will be used to hold the current bigram
+                                                    # (under construction)
+            currBigramStr = ""                   # will hold the converted string version of the bigram
 
-        currNGram.append(filter(word))      # filter the word and add it to current n-gram
+            currBigram.append(word)
 
-        # If the end of the file has not yet been reached...
-        if (counter + n <= len(textBlock)):                 
-            endIndex = counter + n
-            for theNext in range(counter+1, endIndex):        # loop through next n-1 subsequent words
-                currNGram.append(textBlock[theNext])          # put all these words together into an n-gram
-            currNGramStr = ' '.join(str(w) for w in currNGram)          # convert to a string
-            currNGramStr.replace("[","").replace("]","").replace("'","")
+            if (counter + 1 < len(sentence)):         # if we haven't reached the end of the file...
+                nextWord = sentence[counter+1]
+                currBigram.append(nextWord)             # add the next word to the bigram
+                currBigramStr = ' '.join(str(w) for w in currBigram)            # convert to a string
+                currBigramStr.replace("[","").replace("]","").replace("'","")       # get rid of brackets and ' '
 
-            flag = 0                            # flag for whether we've seen this n-gram before
-            for key in myCountDict:              # loop through all n-grams in dictionary                     
-                if (key == currNGramStr):                   # if we've encountered this n-gram before...
-                    currCount = myCountDict[currNGramStr]      # find it's current count
-                    myCountDict.update({currNGramStr : currCount + 1})   # update the dictionary with count + 1
-                    flag = 1
-                    break
+                if (not(myBigramDict.get(currBigramStr) is None)):
+                    count = myBigramDict[currBigramStr] + 1      # find it's current count
+                    myBigramDict[currBigramStr] = count          # update the dictionary
 
-            if flag == 0:
-                myCountDict.update({currNGramStr : 1})        # otherwise, add new entry with count 1             
+                else:
+                    new = {currBigramStr : 1}                    # otherwise, add new entry with count 1
+                    myBigramDict.update(new)                     # update the dictionary
 
-            counter = counter + 1                   
+                counter = counter + 1                   
 
-    # Return this dictionary with all n-grams and their counts
-    return myCountDict
+    # Return this dictionary with all bigrams and their counts
+    return(myBigramDict)
 
 #################################################################################################################
-# Given a text block, extracts presence of keywords for both hip hop and country features and creates two 
-# feature vectors which it returns as (hip hop vector, country vector)
-# TODO: should we change this to frequency, or is presence good enough?
+# Computes all unigrams and their counts in the given text
+# Input: training or test text file
+# Output: a dictionary of all unigrams and their counts 
 #################################################################################################################
-def extractKeywordFeatures(textBlock):
+def unigramCounts(sentences):
 
-    # Extracted from the Internet - need more hip hop keywords?
-    hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
-        "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
-            "never", "fuck", "hit", "money", "ass", "big", "real"]
-    
-    countryKeywords = ["ride", "baby", "oh", "tobacco", "windows", "blown", \
-        "road", "memory", "windows", "drunk", "got", "know", "highway", "cold", "beer" \
-            "little", "away", "dirt", "town", "chew", "whoa", "plane", "southern", "south" \
-                "redneck", "springsteen", "cruise", "truck", "headlights", "town" \
-                    "radio", "hey", "rolling", "song", "round", "til", "lane", "wind"]
-    
-    # Define and initialize feature vectors with 0's
-    hipHopFeatureVect = []
-    for i in range(len(hipHopKeywords)): hipHopFeatureVect.append(0)
-    countryFeatureVect = []
-    for i in range(len(countryKeywords)): countryFeatureVect.append(0)
+    myUnigramDict = {}                              # will hold the unigrams and all their counts
 
-    # Update the feature vectors
-        # NOTE: the words are not filtered because, esp. in the case of hip hop, the 
-        # suffixes can be meaningful (i.e. balling, not ball)
-    for word in textBlock:
-        # Check if the current word is in hip hop keywords list
-        if word in hipHopKeywords:
-            # If it is, replace its 0 in the vector with a 1
-            index = hipHopKeywords.index(word)
-            hipHopFeatureVect[index] = 1
+    # Loop through all the words in the file and add unigrams to dictionary. If a unigram
+    # already exists in the dictionary, update its count
+    for sentence in sentences:
+        sentence = sentence.split()
+        for word in sentence:
+            unigramString = word.replace("[","").replace("]","").replace("'","")    # get rid of brackets and junk
 
-        # Check if the current word is in country keywords list
-        if word in countryKeywords:
-            # If it is, replace its 0 in the vector with a 1
-            index = countryKeywords.index(word)
-            countryFeatureVect[index] = 1
+            if (myUnigramDict.get(unigramString) is None):     # if not already in the dictionary...
+                myUnigramDict.update({unigramString : 1})           # add to dictionary with a count of 1
 
-    return(hipHopFeatureVect, countryFeatureVect)
+            else:
+                count = myUnigramDict.get(unigramString) + 1            # get current count
+                myUnigramDict[unigramString] = count                # update it with one more than that
+
+    return(myUnigramDict)
 
 #################################################################################################################
-# Given an input word, returns a token that is "stemmed" & "lemmatized" (contains only
-# the morphologically correct root word of the original word)
+# Creates and returns a dictionary of probabilities for all bigrams in the input text. This dictionary will be  
+# of the format {bigram : probability} and will be referenced when a new text is encountered. Will ultimately
+# be called twice per file (once with all plot sentences and once with all review sentences)
 #################################################################################################################
-def filter(inputWord):
+def createBigramProbabilityDict(sentences):
 
-	filteredWord = ""		# Will hold the new root word from orig. word
+    probDictionary = {}             # the dictionary to be returned
 
-	lemmatizer = WordNetLemmatizer()
-	porterStemmer = PorterStemmer()
+    bigramCountDictionary = bigramCounts(sentences)         # generate the bigram count dictionary
+    unigramCountDictionary = unigramCounts(sentences)       # generate the unigram count dictionary
+    vocabSize = len(unigramCountDictionary.items())         # get vocab size
 
-	stopWords = set(stopwords.words("english"))		# set stop words (high frequency words that don't contribute
-													# to meaning of sentence, such as 'a', 'the', 'an', etc.)
+    # Loop through all bigrams, access count, and generate Katz-backoff probability
+    for bigram in bigramCountDictionary.keys():
+        bigramCount = bigramCountDictionary.get(bigram)
 
-	if (inputWord not in stopWords):					# if not a stop word
-		psw = porterStemmer.stem(inputWord)				# stem the word
-		filteredWord = lemmatizer.lemmatize(psw)	# append the lemmatized and stemmed word
+        # Get the count of this history (unigram) by separating out history from token
+        bigram = str(bigram).lstrip().rstrip()                  # remove leading and training whitespace
+        splitBigram = bigram.split()                       # split around the blank between history & token
+        unigram = splitBigram[0]                           # access just the history
+        unigramCount = unigramCountDictionary.get(unigram)      # get count of this history
 
-	return (filteredWord)
+        prob = generateKatzBackoffProbability(bigram, bigramCount, unigram, unigramCount, vocabSize)
+        probDictionary.update({bigram : prob})
+
+    return(probDictionary)
+
+#################################################################################################################
+# Creates and returns a dictionary of probabilities for all unigrams in the input text. This dictionary will be  
+# of the format {unigram : probability} and will be referenced when a new text is encountered. Will ultimately
+# be called twice per file (once with all plot sentences and once with all review sentences)
+#################################################################################################################
+def createUnigramProbabilityDict(sentences):
+    probDictionary = {}             # the dictionary to be returned
+
+    unigramCountDictionary = unigramCounts(sentences)       # generate the unigram count dictionary
+    vocabSize = len(unigramCountDictionary.items())         # get vocab size
+
+    # Loop through all unigrams, access count, and generate Katz-backoff probability
+    for unigram in unigramCountDictionary.keys():
+        unigramCount = unigramCountDictionary.get(unigram)
+        unigram = str(unigram).lstrip().rstrip()                  # remove leading and training whitespace
+
+        prob = generateKatzBackoffProbability(None, None, unigram, unigramCount, vocabSize)
+        probDictionary.update({unigram : prob})
+
+    return(probDictionary)
+
+#################################################################################################################
+ # Given counts of all the bigrams and unigrams, along with the overall size of the vocabulary in the text,
+ # generate probabilities using Katz-backoff with absolute discounting
+ # TODO: this function needs to be fixed! Had some problems
+ #################################################################################################################
+def generateKatzBackoffProbability(bigram, bigramCount, unigram, unigramCount, vocabSize):  
+    D = 0.75            # Let D be 0.75, the standard value
+    probability = 0     # Will hold the probability to be returned
+
+    # We've backed off one time, so we're evaluating the Katz probability of a unigram
+    if (bigram == None):
+        # We've never seen this unigram before
+        if (unigramCount == 0):
+            probability = 0         # FIX THIS, to use open vocab! Keep a count of unknowns and then use that prob
+
+        # We've seen this unigram before: P* = C(a)-d / V, where V is size of vocab
+        else:
+            probability = (unigramCount - D) / vocabSize
+
+        return(probability)
+
+    # If the count of this bigram is 0...
+    if (bigramCount == 0):
+
+        # Calculate P* = C(a b)-d / c(a)
+        Pstar = (bigramCount - D) / unigramCount
+
+        # Calculate Pkatz(a)
+        PkatzUnigram = generateKatzBackoffProbability(None, None, unigram, unigramCount, vocabSize)
+
+        # Calculate alpha = (1 - P*(a b)) / Pkatz(a)
+        alpha = (1 - Pstar) / PkatzUnigram
+
+        # Calculate probability = alpha * Pkatz(a)
+        probability = alpha * PkatzUnigram
+
+
+    # We've seen this bigram before
+    else:
+        probability = (bigramCount - D) / unigramCount
+
+    return(probability)
+
