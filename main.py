@@ -7,6 +7,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 
 from Parser import readCSVFile
+from GenerateFeatureVectors import generateTrainingDicts_LanguageModels, generateTrainingDicts_Bayes
+from handleTestLyrics import classifyLyric
 
 def main():
 
@@ -47,6 +49,20 @@ def main():
     # Step 2: Generate N-Gram counts
     # Step 3: Train LM using Katz Backoff, with absolute discounting using country and hip-hop lyrics
     # Step 4: Use language model to classify all testing lyrics
+
+    # Generate probability dictionaries for unigrams and bigrams using language models
+    # LM_dictionaries = generateTrainingDicts_LanguageModels(hiphop_lyrics, country_lyrics)
+
+    # Generate probability dictionaries using a Bayes model
+    # bayes_dictionaries = generateTrainingDicts_Bayes(hiphop_lyrics, country_lyrics)
+
+    # Assume that the tester file is passed in via the command file - parse it somehow?
+    # testFile = sys.argv[1]
+
+    # Use these probability dictionaries to classify new lyrics
+    # for item in testFile:
+        # classification = classifyLyric(item, LM_dictionaries, bayes_dictionaries)
+        # print(classification)           #TODO: what do we want to do with the result
 
 def formatText(lyrics):
     formattedLyrics = []
