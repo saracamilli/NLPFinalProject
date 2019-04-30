@@ -15,8 +15,14 @@ def main():
     country_lyrics = []
     hiphop_lyrics = []
 
+    # Store country/hip-hop lyrics as sentences in list
     entries = readCSVFile("lyrics.csv")
 
+    # use half the list for training, half for testing
+    trainingEntries = entries[:len(entries)//2]
+    testingEntries = entries[len(entries)//2:]
+
+    # Use the genre label to insert each lyric into the country or hip-hop dataset
     print("Classifying training data...")
     for lyric in entries:
         if (lyric[0] == 'c'):
@@ -29,11 +35,12 @@ def main():
     print("Hip-Hop lyric count: " + str(len(hiphop_lyrics)))
     print("Country lyric count: " + str(len(country_lyrics)))
 
+    # Format the text
     print("Formatting country lyrics...")
     country_lyrics = formatText(country_lyrics)
     print("Done formatting country lyrics!\nFormatting hip-hop lyrics...")
 
-    print("===========  COUNTRY LYRICS ============\n\n")
+    print("===========  COUNTRY LYRICS 0-20 ============\n\n")
     for x in range(0,20):
         print(country_lyrics[x] + "\n\n")
 
@@ -41,28 +48,24 @@ def main():
     hiphop_lyrics = formatText(hiphop_lyrics)
     print("Done formatting hip-hop lyrics!")
 
-    print("===========  HIP-HOP LYRICS ============\n\n")
+    print("===========  HIP-HOP LYRICS 0-20 ============\n\n")
     for x in range(0,20):
         print(hiphop_lyrics[x] + "\n\n")
 
-    # Step 1: Format text for LM Processing.
     # Step 2: Generate N-Gram counts
     # Step 3: Train LM using Katz Backoff, with absolute discounting using country and hip-hop lyrics
     # Step 4: Use language model to classify all testing lyrics
 
     # Generate probability dictionaries for unigrams and bigrams using language models
-    # LM_dictionaries = generateTrainingDicts_LanguageModels(hiphop_lyrics, country_lyrics)
+    LM_dictionaries = generateTrainingDicts_LanguageModels(hiphop_lyrics, country_lyrics)
 
     # Generate probability dictionaries using a Bayes model
-    # bayes_dictionaries = generateTrainingDicts_Bayes(hiphop_lyrics, country_lyrics)
-
-    # Assume that the tester file is passed in via the command file - parse it somehow?
-    # testFile = sys.argv[1]
+    bayes_dictionaries = generateTrainingDicts_Bayes(hiphop_lyrics, country_lyrics)
 
     # Use these probability dictionaries to classify new lyrics
-    # for item in testFile:
-        # classification = classifyLyric(item, LM_dictionaries, bayes_dictionaries)
-        # print(classification)           #TODO: what do we want to do with the result
+    for entry in testingEntries:
+        classification = classifyLyric(item, LM_dictionaries, bayes_dictionaries)
+        print(classification)           # TODO: what do we want to do with the result
 
 def formatText(lyrics):
     formattedLyrics = []

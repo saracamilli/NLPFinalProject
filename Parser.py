@@ -24,7 +24,7 @@ def readCSVFile(filename):
                 if entry[4] == "Country" or entry[4] == "Hip-Hop":
                     sentences = entry[5].splitlines()
                     for line in sentences:
-                        if len(line) < 20 or len(line) > 300:
+                        if len(line) < 35 or len(line) > 300:
                             continue
                         else:
                             if (entry[4] == "Country"):
