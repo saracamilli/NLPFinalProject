@@ -15,7 +15,7 @@ def createArffFile(featureVectors, senseDict, trainOrTest):
 	else:
 		print("error in train or test file distinguishment")
 
-	file.write("@RELATION bank\n")				# add an @relation
+	file.write("@RELATION lyrics\n")			# add an @RELATION
 
 	# Add attributes to the file
 	file.write("@ATTRIBUTE collocationalWOFeatures STRING\n")

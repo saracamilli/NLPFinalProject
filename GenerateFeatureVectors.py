@@ -6,6 +6,7 @@ import codecs
 from nltk.tokenize import PunktSentenceTokenizer,sent_tokenize, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer, PorterStemmer
+nltk.download('wordnet')
 
 #################################################################################################################
 # Given lyrical sentences in both hip hop and country, generate bigram and unigram probability dictionaries
