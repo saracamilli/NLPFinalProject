@@ -10,24 +10,24 @@ from nltk.stem.porter import PorterStemmer
 
 from Parser import readCSVFile
 from GenerateFeatureVectors import computeProb, nGramCounts
-from handleTestLyrics import classifyLyric
+from statistics import printStatistics
+
+import random
 
 def main():
 
-    country_lyrics = []
-    hiphop_lyrics = []
+    country_lyrics = []     # Stores all testing country lyrics
+    hiphop_lyrics = []      # Stores all testing hip-hop lyrics
     n = 2
-
-    # Store country/hip-hop lyrics as sentences in list
+    # Store country/hip-hop lyrics from the csv as sentences in list
     entries = readCSVFile("lyrics.csv")
-
     # use half the list for training, half for testing
     trainingEntries = entries[:len(entries)//2]
     testingEntries = entries[len(entries)//2:]
 
     # Use the genre label to insert each lyric into the country or hip-hop dataset
     print("Classifying training data...")
-    for lyric in testingEntries:
+    for lyric in trainingEntries:
         if (lyric[0] == 'c'):
             lyric = lyric[3:]
             country_lyrics.append(lyric)
@@ -44,24 +44,9 @@ def main():
     country_lyrics = formatText(country_lyrics)
     print("Done formatting country lyrics!\nFormatting hip-hop lyrics...")
 
-    #print("===========  COUNTRY LYRICS 0-20 ============\n\n")
-    #for x in range(0,20):
-       # print(country_lyrics[x] + "\n\n")
-
 
     hiphop_lyrics = formatText(hiphop_lyrics)
     print("Done formatting hip-hop lyrics!")
-
-    #print("===========  HIP-HOP LYRICS 0-20 ============\n\n")
-    #for x in range(0,20):
-       # print(hiphop_lyrics[x] + "\n\n")
-
-    # Step 2: Generate N-Gram counts
-    # Step 3: Train LM using Katz Backoff, with absolute discounting using country and hip-hop lyrics
-    # Step 4: Use language model to classify all testing lyrics
-
-    # Generate probability dictionaries for unigrams and bigrams using language models
-    # LM_dictionaries = generateTrainingDicts_LanguageModels(hiphop_lyrics, country_lyrics)
 
     country_nGramCounts = nGramCounts(country_lyrics, n)
     country_nMinus1GramCounts = nGramCounts(country_lyrics, n - 1)
@@ -88,41 +73,43 @@ def main():
         hiphop_TotalWordCount += count
 
     # TESTING
-    country = 0
-    hip_hop = 0
+    results = []
 
     print("Number of Testing Entries: " + str(len(testingEntries)))
+
+    counter = 0
     for entry in testingEntries:
-
+        if counter > 30000:
+            break
         # Probability that any given sentence is either country or hip-hop
-        countryProb = log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
-        hiphopProb = log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
+        countryProb = -log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
+        hiphopProb = -log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
 
-        entry = entry[3:]
-        words = entry.split()
+        lyric = entry[3:]
+        words = lyric.split()
 
         for i in range(0, len(words) - 2):
-            entry = words[i] + " " + words[i + 1]
+            nGram = words[i] + " " + words[i + 1]
             history = words[i].strip()
-            countryProb += computeProb(entry, country_nGramCounts.get(entry), country_nMinus1GramCounts.get(history),
+            countryProb += computeProb(nGram, country_nGramCounts.get(nGram), country_nMinus1GramCounts.get(history),
                                        country_TotalWordCount, country_estimatedUnknownWordCount)
-            hiphopProb += computeProb(entry, hiphop_nGramCounts.get(entry), hiphop_nMinus1GramCounts.get(history),
+            hiphopProb += computeProb(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
-            print("Country Prob: " + str(countryProb))
-            print("Hip-Hop Prob: " + str(hiphopProb))
+        if (countryProb > hiphopProb):
+            results.append(entry)
+        elif (hiphopProb > countryProb):
+            results.append(entry)
+        else:
+            if (random.choice(1,-1) > 0):
+                results.append(entry)
+            else:
+                results.append(entry)
+        counter += 1
+
+    printStatistics(results, testingEntries)
 
 
 
-    # Generate probability dictionaries using a Bayes model
-    # bayes_dictionaries = generateTrainingDicts_Bayes(hiphop_lyrics, country_lyrics)
-
-    # Use these probability dictionaries to classify new lyrics
-    #for entry in testingEntries:
-        # Remove genre tag before using as a testing sentence
-        #entry = entry[3:]
-        #classification = classifyLyric(entry, LM_dictionaries, bayes_dictionaries)
-        #print("Lyric:  " + entry)
-        #print("Classification:  " + str(classification) + "\n")           # TODO: what do we want to do with the result
 
 def formatText(lyrics):
     formattedLyrics = []
@@ -138,6 +125,7 @@ def formatText(lyrics):
         except UnicodeDecodeError as e:
             continue
     return formattedLyrics
+
 
 ###############################################################################################################
 if __name__ == "__main__":

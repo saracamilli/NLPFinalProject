@@ -40,22 +40,3 @@ def readCSVFile(filename):
     print("Done reading the training file!")
 
     return entries
-
-###############################################################################################################
-# Parses the input file with lyrics given by the user who wants to classify them by genre (must be in the
-# specific format giving in the README)
-###############################################################################################################
-def parseTesterFile(testFile):
-    try:
-        f = open(testFile)
-        parsedFile = []
-
-        #TODO: FILL THIS IN
-
-        f.close()
-        return(parsedFile)
-
-    except IOError:
-        print("Error: Cannot open the file containing the tester data.")
-        print("Filename requested: " + testFile)
-        exit(1)

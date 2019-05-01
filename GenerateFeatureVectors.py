@@ -11,9 +11,9 @@ from math import log
 # nltk.download('wordnet')
 
 #################################################################################################################
-# Computes all bigrams and their counts in the given text
+# Computes all nGrams and their counts in the given text
 # Input: training or test text file
-# Output: a dictionary of all bigrams and their counts
+# Output: a dictionary of all nGrams and their counts
 #################################################################################################################
 def nGramCounts(sentences, n):
 
@@ -52,7 +52,6 @@ def nGramCounts(sentences, n):
 #################################################################################################################
  # Given counts of all the bigrams and unigrams, along with the overall size of the vocabulary in the text,
  # generate probabilities using Katz-backoff with absolute discounting
- # TODO: this function needs to be fixed! Had some problems
  #################################################################################################################
 def computeProb(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCount):
     words = entry.split()   # Split the n-gram into words
@@ -60,18 +59,16 @@ def computeProb(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCount
 
     if nGramCount is None or nMinus1GramCount is None:
         if (nMinus1GramCount is None):
-            prob = log(unknownWordCount / vocabSize)
+            prob = -log(unknownWordCount / vocabSize)
             return prob
         else:
-            prob = log(nMinus1GramCount / vocabSize)
+            prob = -log(nMinus1GramCount / vocabSize)
             return prob
 
     try:
-        return log((nGramCount - 0.75) / nMinus1GramCount)
+        return -log((nGramCount - 0.75) / nMinus1GramCount)
     except TypeError:
         print(entry)
         print(nGramCount)
         print(history)
         print (nMinus1GramCount)
-
-
