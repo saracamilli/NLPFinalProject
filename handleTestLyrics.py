@@ -32,6 +32,11 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
     country_estimatedUnknownWordCount = wordCounts[2]
     hiphop_estimatedUnknownWordCount = wordCounts[3]
 
+    # Incorporate Naive Bayes features as well
+    bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
+    countryProbs_Bayes = bayes_probs[0]
+    hiphopProbs_Bayes = bayes_probs[1]
+
     results = []    # Stores newly classified test sentences
 
     counter = 0
@@ -63,10 +68,8 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
             if i == 1:
                 countryProb = countryProb + 0.3
 
-        # Incorporate Naive Bayes features as well
-        #bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
-        #countryProb = countryProb + bayes_probs[0]
-        #hiphopProb = hiphopProb + bayes_probs[1]
+        countryProb = countryProb + countryProbs_Bayes[testingEntries.index(entry)]
+        hiphopProb = hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -114,6 +117,9 @@ def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics
     hiphop_unigramCounts = nGramCounts(country_lyrics, 1)
     country_unigramCounts = nGramCounts(hiphop_lyrics, 1)
 
+    country_probs = []
+    hiphop_probs = []
+
     # Loop through all lyrical entries
     for entry in testingEntries:
 
@@ -127,10 +133,10 @@ def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics
             countryProb = countryProb + computeProb_Bayes(word, False, hiphop_unigramCounts, country_unigramCounts)
         
         # Invert the log probabilities
-        countryProb = - countryProb
-        hiphopProb = - hiphopProb
+        country_probs.append(-countryProb)
+        hiphop_probs.append(-hiphopProb)
 
-    return(countryProb, hiphopProb)
+    return(country_probs, hiphop_probs)
 
 #################################################################################################################
 # Given a text block, extracts presence of keywords for both hip hop and country features and creates two
