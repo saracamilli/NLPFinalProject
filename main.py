@@ -1,6 +1,5 @@
 
 # Name: Palmer Robins & Sara Camili
-from __future__ import division
 
 import csv
 import random

@@ -1,11 +1,14 @@
 # Name: Palmer Robins & Sara Camili
 
 import csv
+import string
 
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+#nltk.download('stopwords')
 
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open
@@ -55,12 +58,18 @@ def formatText(lyrics):
         if lyrics.index(lyric) > 30000:
             break
         try:
+            # Tokenize the lyric
             tokens = word_tokenize(lyric)
-            for word in tokens:
-                word = lemmatizer.lemmatize(word)
-            words = [word for word in tokens if word.isalpha()]
-            stemmed = ' '.join([porter.stem(word) for word in tokens])
-            formattedLyrics.append(stemmed)
+            # Convert to lower case & stem
+            tokens = [porter.stem(t) for t in tokens]
+            # remove punctuation from each word
+            table = str.maketrans('','', string.punctuation)
+            stripped = [w.translate(table) for w in tokens]
+            # remove all tokens that are not alphabetic
+            words = [word for word in stripped if word.isalpha()]
+            stop_words = set(stopwords.words('english'))
+            words = [w for w in tokens if not w in stop_words]
+            formattedLyrics.append(words)
         except UnicodeDecodeError as e:
             continue
     return formattedLyrics

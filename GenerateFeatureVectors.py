@@ -16,19 +16,18 @@ from math import log
 # Output: a dictionary of all nGrams and their counts
 #################################################################################################################
 def nGramCounts(sentences, n):
-
     counts = {}
 
     # For each sentence in the set of sentences
-    for line in sentences:
+    for words in sentences:
         #Split the sentence into it's tokens
-        words = line.split();
+        #words = line.split();
 
         # Construct the entries, count the entries, and place in the dictionary
         for i in range(len(words)):
             word = words[i];
             for j in range(1, n):
-                if i + j < len(words):
+                if (i + j) < len(words):
                     word = word + " " + words[j + i];
                 else:
                     break
