@@ -22,7 +22,7 @@ def readCSVFile(filename):
             csvreader = csv.reader(lyricsFile)
 
             # extracting field names through first row
-            fields = csvreader.next()
+            fields = next(csvreader)
 
             # extracting each data row containing country/hip-hop lyrics, one by one
             for entry in csvreader:
