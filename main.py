@@ -1,18 +1,13 @@
 # Name: Palmer Robins & Sara Camili
 from __future__ import division
-import csv
-
 from math import log
 
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.stem.porter import PorterStemmer
+import csv
+import random
 
-from Parser import readCSVFile
+from Parser import formatText, readCSVFile
 from GenerateFeatureVectors import computeProb, nGramCounts
 from statistics import printStatistics
-
-import random
 
 def main():
 
@@ -34,32 +29,27 @@ def main():
         else:
             lyric = lyric[3:]
             hiphop_lyrics.append(lyric)
-
     print("Done classifying training data!")
-    print("Hip-Hop lyric count: " + str(len(hiphop_lyrics)))
-    print("Country lyric count: " + str(len(country_lyrics)))
 
     # Format the text
     print("Formatting country lyrics...")
     country_lyrics = formatText(country_lyrics)
     print("Done formatting country lyrics!\nFormatting hip-hop lyrics...")
-
-
     hiphop_lyrics = formatText(hiphop_lyrics)
     print("Done formatting hip-hop lyrics!")
 
+    # Get nGram counts for country training data
     country_nGramCounts = nGramCounts(country_lyrics, n)
     country_nMinus1GramCounts = nGramCounts(country_lyrics, n - 1)
-
+    # Get nGram counts for hip-hop training data
     hiphop_nGramCounts = nGramCounts(hiphop_lyrics, n)
     hiphop_nMinus1GramCounts = nGramCounts(hiphop_lyrics, n - 1)
 
+    # Get the total word counts for both classes, as well as an estimation of unknown word counts
     country_TotalWordCount = 0
     hiphop_TotalWordCount = 0
     country_estimatedUnknownWordCount = 0
     hiphop_estimatedUnknownWordCount = 0
-
-    # Get the total word counts for both classes, as well as an estimation of unknown word counts
     for gram, count in country_nMinus1GramCounts.items():
         if count <= 5:
             country_estimatedUnknownWordCount += 1
@@ -73,10 +63,7 @@ def main():
         hiphop_TotalWordCount += count
 
     # TESTING
-    results = []
-
-    print("Number of Testing Entries: " + str(len(testingEntries)))
-
+    results = []    # Stores newly classified test sentences
     counter = 0
     for entry in testingEntries:
         if counter > 30000:
@@ -96,36 +83,17 @@ def main():
             hiphopProb += computeProb(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
         if (countryProb > hiphopProb):
-            results.append(entry)
+            results.append("c: " + lyric)
         elif (hiphopProb > countryProb):
-            results.append(entry)
+            results.append("h: " + lyric)
         else:
             if (random.choice(1,-1) > 0):
-                results.append(entry)
+                results.append("c: " + lyric)
             else:
-                results.append(entry)
+                results.append("h: " + lyric)
         counter += 1
 
     printStatistics(results, testingEntries)
-
-
-
-
-def formatText(lyrics):
-    formattedLyrics = []
-    porter = PorterStemmer()
-    for lyric in lyrics:
-        if lyrics.index(lyric) > 10000:
-            break
-        try:
-            tokens = word_tokenize(lyric)
-            words = [word for word in tokens if word.isalpha()]
-            stemmed = ' '.join([porter.stem(word) for word in tokens])
-            formattedLyrics.append(stemmed)
-        except UnicodeDecodeError as e:
-            continue
-    return formattedLyrics
-
 
 ###############################################################################################################
 if __name__ == "__main__":

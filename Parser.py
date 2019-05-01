@@ -2,6 +2,10 @@
 
 import csv
 
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.stem.porter import PorterStemmer
+
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open
 # the file and return a list
@@ -40,3 +44,18 @@ def readCSVFile(filename):
     print("Done reading the training file!")
 
     return entries
+
+def formatText(lyrics):
+    formattedLyrics = []
+    porter = PorterStemmer()
+    for lyric in lyrics:
+        if lyrics.index(lyric) > 10000:
+            break
+        try:
+            tokens = word_tokenize(lyric)
+            words = [word for word in tokens if word.isalpha()]
+            stemmed = ' '.join([porter.stem(word) for word in tokens])
+            formattedLyrics.append(stemmed)
+        except UnicodeDecodeError as e:
+            continue
+    return formattedLyrics

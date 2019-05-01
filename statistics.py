@@ -36,7 +36,7 @@ def printStatistics(results, testingEntries):
                 c_truePos += 1
                 h_trueNeg += 1
             else:
-                print("Incorrectly Classified as Country")
+                print("Incorrectly Classified as Hip-Hop")
                 c_falseNeg += 1
                 h_falsePos += 1
         else:
@@ -47,7 +47,7 @@ def printStatistics(results, testingEntries):
                 h_truePos += 1
                 c_trueNeg += 1
             else:
-                print("Incorrectly Classified as Hip-Hop")
+                print("Incorrectly Classified as Country")
                 h_falseNeg += 1
                 c_falsePos += 1
         counter += 1
