@@ -55,7 +55,7 @@ def printStatistics(results, testingEntries):
     # Print the Result Measures
     print("Country True Pos: " + str(c_truePos))
     print("Country True Neg: " + str(c_trueNeg))
-    print("Country False Pos: " + str(c_falseNeg))
+    print("Country False Pos: " + str(c_falsePos))
     print("Country False Neg: " + str(c_falseNeg))
     accuracy = (c_truePos + c_trueNeg) / (c_trueNeg + c_truePos + c_falseNeg + c_falsePos)
     print("ACCURACY: " + str(accuracy))

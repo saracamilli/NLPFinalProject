@@ -10,12 +10,13 @@ from GenerateFeatureVectors import computeProb, nGramCounts
 from statistics import printStatistics
 
 def main():
-
+    n = 2
     country_lyrics = []     # Stores all testing country lyrics
     hiphop_lyrics = []      # Stores all testing hip-hop lyrics
-    n = 2
+
     # Store country/hip-hop lyrics from the csv as sentences in list
     entries = readCSVFile("lyrics.csv")
+
     # use half the list for training, half for testing
     trainingEntries = entries[:len(entries)//2]
     testingEntries = entries[len(entries)//2:]
@@ -65,6 +66,9 @@ def main():
     # TESTING
     results = []    # Stores newly classified test sentences
     counter = 0
+    print("Formatting Testing Entries...")
+    testingEntries = formatText(testingEntries)
+    print("Done formatting testing entries!")
     for entry in testingEntries:
         if counter > 30000:
             break
@@ -87,6 +91,7 @@ def main():
         elif (hiphopProb > countryProb):
             results.append("h: " + lyric)
         else:
+            print("The probabilities are the same")
             if (random.choice(1,-1) > 0):
                 results.append("c: " + lyric)
             else:
