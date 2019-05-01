@@ -11,12 +11,13 @@ from handleTestLyrics import calculateSongProbability_LANG_MODEL, calculateSongP
 from statistics import printStatistics
 
 def main():
-
+    n = 2
     country_lyrics = []     # Stores all testing country lyrics
     hiphop_lyrics = []      # Stores all testing hip-hop lyrics
 
     # Store country/hip-hop lyrics from the csv as sentences in list
     entries = readCSVFile("lyrics.csv")
+
     # use half the list for training, half for testing
     trainingEntries = entries[:len(entries)//2]
     testingEntries = entries[len(entries)//2:]

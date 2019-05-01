@@ -1,4 +1,6 @@
 # Name: Palmer Robins & Sara Camili
+from math import log
+from GenerateFeatureVectors import LanguageModel, formatText
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
@@ -8,7 +10,7 @@ import random
 
 #################################################################################################################
 # Given a new tester sentence, this helper function uses the probability dictionaries to compute the probability
-# of a given sentence being from a country and hip hop song. Does this by going through each bi/unigram in the 
+# of a given sentence being from a country and hip hop song. Does this by going through each bi/unigram in the
 # line and computing a probability of that bi/unigram being in each category using the Katz-Backoff probabilities
 # in the dictionary
 #################################################################################################################
@@ -77,7 +79,7 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
             else:
                 results.append("h: " + lyric)
         counter += 1
-       
+
     return(results)
 
 #################################################################################################################
@@ -104,8 +106,15 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
         hiphop_estimatedUnknownWordCount)
 
 #################################################################################################################
+<<<<<<< HEAD
 # # Given counts of all the unigrams, along with the overall size of the vocabulary in the text,
  # generate probabilities using Naive Bayes with unigram features.
+=======
+# Given a new tester text, this helper function takes a dictionary of the unigram, bigram, or trigram counts of
+# the new text and loops through all the entries. It takes the product of their probabilities,
+# and then multiplies them together. It then returns this final probability of the sentence being hip hop or
+# country.
+>>>>>>> 0b49fb86c1426f60275679a4c2089bcae5f8dad8
 #################################################################################################################
 def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics):
 
@@ -116,8 +125,17 @@ def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics
     # Loop through all lyrical entries
     for entry in testingEntries:
 
+<<<<<<< HEAD
         # Loop through all the words in the sentence
         for word in entry.split():
+=======
+        # Access probabilities of each word in that sentence
+        prob = probDict.get(word)
+
+        # If prob is None, change to very small probability
+        if (prob is None):
+            prob = 0.00000001
+>>>>>>> 0b49fb86c1426f60275679a4c2089bcae5f8dad8
 
             # Compute probabilities using helper function
             hiphopProb = hiphopProb + computeProb_Bayes(word, True, hiphop_unigramCounts, country_unigramCounts)
@@ -130,7 +148,7 @@ def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics
     return(countryProb, hiphopProb)
 
 #################################################################################################################
-# Given a text block, extracts presence of keywords for both hip hop and country features and creates two 
+# Given a text block, extracts presence of keywords for both hip hop and country features and creates two
 # feature vectors which it returns as (hip hop vector, country vector)
 # TODO: should we change this to frequency, or is presence good enough?
 #################################################################################################################
@@ -140,13 +158,13 @@ def extractKeywordFeatures(textBlock):
     hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
         "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
             "never", "fuck", "hit", "money", "ass", "big", "real"]
-    
+
     countryKeywords = ["ride", "baby", "oh", "tobacco", "windows", "blown", \
         "road", "memory", "drunk", "got", "know", "highway", "cold", "beer" \
             "little", "away", "dirt", "town", "chew", "whoa", "plane", "southern", "south" \
                 "redneck", "springsteen", "cruise", "truck", "headlights", "town" \
                     "radio", "hey", "rolling", "song", "round", "til", "lane", "wind"]
-    
+
     # Define and initialize feature vectors with 0's
     hipHopFeatureVect = []
     for i in range(len(hipHopKeywords)): hipHopFeatureVect.append(0)
@@ -154,7 +172,7 @@ def extractKeywordFeatures(textBlock):
     for i in range(len(countryKeywords)): countryFeatureVect.append(0)
 
     # Update the feature vectors
-        # NOTE: the words are not filtered because, esp. in the case of hip hop, the 
+        # NOTE: the words are not filtered because, esp. in the case of hip hop, the
         # suffixes can be meaningful (i.e. balling, not ball)
     for word in textBlock:
         # Check if the current word is in hip hop keywords list
