@@ -3,36 +3,9 @@
 # THIS FILE HANDLES THE UNSEEN LYRICS. There is a command center function that uses a language model, Bayes 
 # probability, and keyword feature extraction to create an as-accurate-as-possible classification.
 
-#################################################################################################################
-# Compile all the features we are considering in order to make an ultimate judgement on whether the unseen 
-# sentence is country or hip hop. Use the probabilities from the language models, the Bayes model, and the
-# keyword features.
-# Input: a lyrical sentence of unknown genre
-# Output: a classification string of "hip hop" or "country"
-#################################################################################################################
-def classifyLyric(sentence, LM_dictionaries, bayes_dictionaries):
-
-    # Get keyword features
-    keywordVects = extractKeywordFeatures(sentence)
-
-    # Get language model features
-    bigram_hipHop_dict = LM_dictionaries[0]
-    unigram_hipHop_dict = LM_dictionaries[1]
-    bigram_country_dict = LM_dictionaries[2]
-    unigram_country_dict = LM_dictionaries[3]
-
-    bigramProbs = calculateSongProbability_LANG_MODEL(sentence, bigram_hipHop_dict, bigram_country_dict, "bigram")
-    unigramProbs = calculateSongProbability_LANG_MODEL(sentence, unigram_hipHop_dict, unigram_country_dict, "unigram")
-
-    # Get Bayes features
-    bayes_hipHop_dict = bayes_dictionaries[0]
-    bayes_country_dict = bayes_dictionaries[1]
-
-    bayes_hipHop_Prob = calculateSongProbability_BAYES(sentence, bayes_hipHop_dict)
-    bayes_country_Prob = calculateSongProbability_BAYES(sentence, bayes_country_dict)
-
-    # NOW, SOMEHOW COMBINE ALL THESE PROBABILTIES IN A MEANINGFUL WAY
-
+from GenerateFeatureVectors import nGramCounts, computeProb
+from math import log
+import random
 
 #################################################################################################################
 # Given a new tester sentence, this helper function uses the probability dictionaries to compute the probability
@@ -40,55 +13,79 @@ def classifyLyric(sentence, LM_dictionaries, bayes_dictionaries):
 # line and computing a probability of that bi/unigram being in each category using the Katz-Backoff probabilities
 # in the dictionary
 #################################################################################################################
-def calculateSongProbability_LANG_MODEL(sentence, hipHopProbDict, countryProbDict, bigramOrUnigram):
+def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_lyrics):
 
-    currentGram = ""                  # will hold the current bigram
+    n = 2
 
-    totalProb_hipHop = 1
-    totalProb_country = 1
+    # Get nGram counts for country training data
+    country_nGramCounts = nGramCounts(country_lyrics, n)
+    country_nMinus1GramCounts = nGramCounts(country_lyrics, n - 1)
+    # Get nGram counts for hip-hop training data
+    hiphop_nGramCounts = nGramCounts(hiphop_lyrics, n)
+    hiphop_nMinus1GramCounts = nGramCounts(hiphop_lyrics, n - 1)
 
-    # Loop through all bigrams in the line and retrieve their probability in each dictionary
+    # Get total and estimated word counts using helper function
+    wordCounts = getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nMinus1GramCounts, \
+        hiphop_nGramCounts, hiphop_nMinus1GramCounts)
+    country_TotalWordCount = wordCounts[0]
+    hiphop_TotalWordCount = wordCounts[1]
+    country_estimatedUnknownWordCount = wordCounts[2]
+    hiphop_estimatedUnknownWordCount = wordCounts[3]
+
+    results = []    # Stores newly classified test sentences
     counter = 0
-    for word in sentence.split():
+    for entry in testingEntries:
+        if counter > 30000:
+            break
+        # Probability that any given sentence is either country or hip-hop
+        countryProb = -log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
+        hiphopProb = -log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
 
-        # This is the bigram version
-        if (bigramOrUnigram == "bigram"):
-            # If we still have remaining words...
-            try:
-                # Form bigram
-                nextWord = sentence.split()[counter+1]
-                currentGram = word + " " + nextWord
+        lyric = entry[3:]
+        words = lyric.split()
 
-                # Check for probabilities in dictionaries 
-                prob_hipHop = hipHopProbDict.get(currentGram)
-                prob_country = countryProbDict.get(currentGram)
-
-                pass
-
-             # There's not enough words left!
-            except Exception as e:
-                break
-
-        # This is the unigram version
+        for i in range(0, len(words) - 2):
+            nGram = words[i] + " " + words[i + 1]
+            history = words[i].strip()
+            countryProb += computeProb(nGram, country_nGramCounts.get(nGram), country_nMinus1GramCounts.get(history),
+                                       country_TotalWordCount, country_estimatedUnknownWordCount)
+            hiphopProb += computeProb(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
+                                      hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
+        if (countryProb > hiphopProb):
+            results.append("c: " + lyric)
+        elif (hiphopProb > countryProb):
+            results.append("h: " + lyric)
         else:
-            currentGram = word
-
-            # Check for probabilities in dictionaries 
-            prob_hipHop = hipHopProbDict.get(currentGram)
-            prob_country = countryProbDict.get(currentGram)
-
-        # If there is no match from the training text, set the probability of the bigram to 
-        # a very small probability
-        if (prob_hipHop is None):
-            prob_hipHop = 0.00000001
-        if (prob_country is None):
-            prob_country = 0.00000001
-        
-        # Compute the total probability with this gram included
-        totalProb_hipHop = totalProb_hipHop * prob_hipHop
-        totalProb_country = totalProb_country * prob_country
+            if (random.choice(1,-1) > 0):
+                results.append("c: " + lyric)
+            else:
+                results.append("h: " + lyric)
+        counter += 1
        
-    return(totalProb_hipHop, totalProb_country)
+    return(results)
+
+# Get the total word counts for both classes, as well as an estimation of unknown word counts
+def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nMinus1GramCounts, \
+    hiphop_nGramCounts, hiphop_nMinus1GramCounts):
+
+    country_TotalWordCount = 0
+    hiphop_TotalWordCount = 0
+    country_estimatedUnknownWordCount = 0
+    hiphop_estimatedUnknownWordCount = 0
+    for gram, count in country_nMinus1GramCounts.items():
+        if count <= 5:
+            country_estimatedUnknownWordCount += 1
+            country_nMinus1GramCounts.pop(gram)
+        else:
+            country_TotalWordCount += count
+    for gram, count in hiphop_nMinus1GramCounts.items():
+        if count <= 5:
+            hiphop_estimatedUnknownWordCount += 1
+            hiphop_nMinus1GramCounts.pop(gram)
+        hiphop_TotalWordCount += count
+
+    return(country_TotalWordCount, hiphop_TotalWordCount, country_estimatedUnknownWordCount, \
+        hiphop_estimatedUnknownWordCount)
 
 #################################################################################################################
 # Given a new tester text, this helper function takes a dictionary of the unigram, bigram, or trigram counts of 
