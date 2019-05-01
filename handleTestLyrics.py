@@ -4,7 +4,7 @@ from math import log
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
-from GenerateFeatureVectors import nGramCounts, computeProb
+from GenerateFeatureVectors import nGramCounts, computeProb_LM, computeProb_Bayes
 from math import log
 import random
 
@@ -16,7 +16,7 @@ import random
 #################################################################################################################
 def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_lyrics):
 
-    n = 2
+    n = 2   # bigram model
 
     # Get nGram counts for country training data
     country_nGramCounts = nGramCounts(country_lyrics, n)
@@ -32,6 +32,11 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
     hiphop_TotalWordCount = wordCounts[1]
     country_estimatedUnknownWordCount = wordCounts[2]
     hiphop_estimatedUnknownWordCount = wordCounts[3]
+
+    # Incorporate Naive Bayes features as well
+    bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
+    countryProbs_Bayes = bayes_probs[0]
+    hiphopProbs_Bayes = bayes_probs[1]
 
     results = []    # Stores newly classified test sentences
 
@@ -51,9 +56,9 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         for i in range(0, len(words) - 2):
             nGram = words[i] + " " + words[i + 1]
             history = words[i].strip()
-            countryProb += computeProb(nGram, country_nGramCounts.get(nGram), country_nMinus1GramCounts.get(history),
+            countryProb += computeProb_LM(nGram, country_nGramCounts.get(nGram), country_nMinus1GramCounts.get(history),
                                        country_TotalWordCount, country_estimatedUnknownWordCount)
-            hiphopProb += computeProb(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
+            hiphopProb += computeProb_LM(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
 
         # Extract and use keyword features; add 0.05 to probability for every matching keyword in the
@@ -61,10 +66,13 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
             if i == 1:
-                hiphopProb = hiphopProb + 0.4
+                hiphopProb = hiphopProb + 0.3
         for i in keywordFeat[1]:
             if i == 1:
-                countryProb = countryProb + 0.4
+                countryProb = countryProb + 0.3
+
+        countryProb = countryProb + countryProbs_Bayes[testingEntries.index(entry)]
+        hiphopProb = hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -89,44 +97,49 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
     hiphop_TotalWordCount = 0
     country_estimatedUnknownWordCount = 0
     hiphop_estimatedUnknownWordCount = 0
-    for gram, count in country_nMinus1GramCounts.items():
+    for count in country_nMinus1GramCounts.values():
         if count <= 5:
             country_estimatedUnknownWordCount += 1
-            #country_nMinus1GramCounts.pop(gram)
         else:
             country_TotalWordCount += count
-    for gram, count in hiphop_nMinus1GramCounts.items():
+    for count in hiphop_nMinus1GramCounts.values():
         if count <= 5:
             hiphop_estimatedUnknownWordCount += 1
-            #hiphop_nMinus1GramCounts.pop(gram)
         hiphop_TotalWordCount += count
 
     return(country_TotalWordCount, hiphop_TotalWordCount, country_estimatedUnknownWordCount, \
         hiphop_estimatedUnknownWordCount)
 
 #################################################################################################################
-# Given a new tester text, this helper function takes a dictionary of the unigram, bigram, or trigram counts of
-# the new text and loops through all the entries. It takes the product of their probabilities,
-# and then multiplies them together. It then returns this final probability of the sentence being hip hop or
-# country.
+# Given counts of all the unigrams, along with the overall size of the vocabulary in the text,
+# generate probabilities using Naive Bayes with unigram features..
 #################################################################################################################
-def calculateSongProbability_BAYES(song, probDict):
+def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics):
 
-    product = 1
+    # Get unigram counts of each category 
+    hiphop_unigramCounts = nGramCounts(country_lyrics, 1)
+    country_unigramCounts = nGramCounts(hiphop_lyrics, 1)
 
-    # Loop through all the words in the sentence
-    for word in song.split():
+    country_probs = []
+    hiphop_probs = []
 
-        # Access probabilities of each word in that sentence
-        prob = probDict.get(word)
+    # Loop through all lyrical entries
+    for entry in testingEntries:
 
-        # If prob is None, change to very small probability
-        if (prob is None):
-            prob = 0.00000001
+        hiphopProb = 0
+        countryProb = 0
+        # Loop through all the words in the sentence
+        for word in entry.split():
 
-        product = product * prob
+            # Compute probabilities using helper function
+            hiphopProb = hiphopProb + computeProb_Bayes(word, True, hiphop_unigramCounts, country_unigramCounts)
+            countryProb = countryProb + computeProb_Bayes(word, False, hiphop_unigramCounts, country_unigramCounts)
+        
+        # Invert the log probabilities
+        country_probs.append(-countryProb)
+        hiphop_probs.append(-hiphopProb)
 
-    return(product)
+    return(country_probs, hiphop_probs)
 
 #################################################################################################################
 # Given a text block, extracts presence of keywords for both hip hop and country features and creates two

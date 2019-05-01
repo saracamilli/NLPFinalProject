@@ -25,15 +25,15 @@ def nGramCounts(sentences, n):
 
         # Construct the entries, count the entries, and place in the dictionary
         for i in range(len(words)):
-            word = words[i];
+            word = words[i]
             for j in range(1, n):
-                if (i + j) < len(words):
-                    word = word + " " + words[j + i];
+                if i + j < len(words):
+                    word = word + " " + words[j + i]
                 else:
                     break
 
             if n == 2:
-                word = word.strip();
+                word = word.strip()
                 lengthChecker = len(word.split())
                 if len(word) == 0:
                     continue
@@ -52,7 +52,7 @@ def nGramCounts(sentences, n):
  # Given counts of all the bigrams and unigrams, along with the overall size of the vocabulary in the text,
  # generate probabilities using Katz-backoff with absolute discounting
  #################################################################################################################
-def computeProb(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCount):
+def computeProb_LM(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCount):
     words = entry.split()   # Split the n-gram into words
     history = words[0]
 
@@ -71,3 +71,21 @@ def computeProb(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCount
         print(nGramCount)
         print(history)
         print (nMinus1GramCount)
+
+
+def computeProb_Bayes(word, classifier, hiphop_unigramCounts, country_unigramCounts):
+    # If hip-hop...
+    if (classifier):
+        if (hiphop_unigramCounts.get(word) is None):
+            return(1)
+        else:
+            wordCount = hiphop_unigramCounts.get(word)
+            return(log(wordCount / len(hiphop_unigramCounts)))
+
+    # If we made it here, then country...
+    else:
+        if(country_unigramCounts.get(word) is None):
+            return(1)
+        else:
+            wordCount = country_unigramCounts.get(word)
+            return(log(wordCount / len(country_unigramCounts)))
