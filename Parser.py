@@ -54,7 +54,10 @@ def formatText(lyrics):
     formattedLyrics = []
     porter = PorterStemmer()
     lemmatizer = WordNetLemmatizer()
+    counter = 0
     for lyric in lyrics:
+        if counter > 10:
+            exit(1)
         if lyrics.index(lyric) > 30000:
             break
         try:
@@ -62,14 +65,16 @@ def formatText(lyrics):
             tokens = word_tokenize(lyric)
             # Convert to lower case & stem
             tokens = [porter.stem(t) for t in tokens]
-            # remove punctuation from each word
+            #remove punctuation from each word
             table = str.maketrans('','', string.punctuation)
             stripped = [w.translate(table) for w in tokens]
-            # remove all tokens that are not alphabetic
+            #remove all tokens that are not alphabetic
             words = [word for word in stripped if word.isalpha()]
             stop_words = set(stopwords.words('english'))
             words = [w for w in tokens if not w in stop_words]
             formattedLyrics.append(words)
+            print(words)
+            counter += 1
         except UnicodeDecodeError as e:
             continue
     return formattedLyrics
