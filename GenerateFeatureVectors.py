@@ -22,19 +22,19 @@ def nGramCounts(sentences, n):
     # For each sentence in the set of sentences
     for line in sentences:
         #Split the sentence into it's tokens
-        words = line.split();
+        words = line.split()
 
         # Construct the entries, count the entries, and place in the dictionary
         for i in range(len(words)):
-            word = words[i];
+            word = words[i]
             for j in range(1, n):
                 if i + j < len(words):
-                    word = word + " " + words[j + i];
+                    word = word + " " + words[j + i]
                 else:
                     break
 
             if n == 2:
-                word = word.strip();
+                word = word.strip()
                 lengthChecker = len(word.split())
                 if len(word) == 0:
                     continue

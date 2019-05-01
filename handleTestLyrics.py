@@ -1,6 +1,5 @@
 # Name: Palmer Robins & Sara Camili
 from math import log
-from GenerateFeatureVectors import LanguageModel, formatText
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
@@ -65,9 +64,9 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
                 countryProb = countryProb + 0.4
 
         # Incorporate Naive Bayes features as well
-        bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
-        countryProb = countryProb + bayes_probs[0]
-        hiphopProb = hiphopProb + bayes_probs[1]
+        #bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
+        #countryProb = countryProb + bayes_probs[0]
+        #hiphopProb = hiphopProb + bayes_probs[1]
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -106,15 +105,8 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
         hiphop_estimatedUnknownWordCount)
 
 #################################################################################################################
-<<<<<<< HEAD
-# # Given counts of all the unigrams, along with the overall size of the vocabulary in the text,
- # generate probabilities using Naive Bayes with unigram features.
-=======
-# Given a new tester text, this helper function takes a dictionary of the unigram, bigram, or trigram counts of
-# the new text and loops through all the entries. It takes the product of their probabilities,
-# and then multiplies them together. It then returns this final probability of the sentence being hip hop or
-# country.
->>>>>>> 0b49fb86c1426f60275679a4c2089bcae5f8dad8
+# Given counts of all the unigrams, along with the overall size of the vocabulary in the text,
+# generate probabilities using Naive Bayes with unigram features..
 #################################################################################################################
 def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics):
 
@@ -125,17 +117,10 @@ def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics
     # Loop through all lyrical entries
     for entry in testingEntries:
 
-<<<<<<< HEAD
+        hiphopProb = 0
+        countryProb = 0
         # Loop through all the words in the sentence
         for word in entry.split():
-=======
-        # Access probabilities of each word in that sentence
-        prob = probDict.get(word)
-
-        # If prob is None, change to very small probability
-        if (prob is None):
-            prob = 0.00000001
->>>>>>> 0b49fb86c1426f60275679a4c2089bcae5f8dad8
 
             # Compute probabilities using helper function
             hiphopProb = hiphopProb + computeProb_Bayes(word, True, hiphop_unigramCounts, country_unigramCounts)
