@@ -57,7 +57,7 @@ def printStatistics(results, testingEntries):
     print("Country True Neg: " + str(c_trueNeg))
     print("Country False Pos: " + str(c_falseNeg))
     print("Country False Neg: " + str(c_falseNeg))
-    accuracy = c_truePos + h_truePos / c_trueNeg + c_truePos + h_truePos + h_trueNeg
+    accuracy = c_truePos + h_truePos / c_trueNeg + c_truePos + c_falseNeg + c_falsePos
     print("ACCURACY: " + str(accuracy))
 
     precision = reportPrecision(c_truePos, c_trueNeg)
