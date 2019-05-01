@@ -1,7 +1,6 @@
 # Name: Palmer Robins & Sara Camili
 
-# THIS FILE HANDLES THE UNSEEN LYRICS. There is a command center function that uses a language model, Bayes 
-# probability, and keyword feature extraction to create an as-accurate-as-possible classification.
+# THIS FILE HANDLES UNSEEN LYRICS
 
 from GenerateFeatureVectors import nGramCounts, computeProb
 from math import log
@@ -56,7 +55,7 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         elif (hiphopProb > countryProb):
             results.append("h: " + lyric)
         else:
-            if (random.choice(1,-1) > 0):
+            if (random.random() > 0.5):
                 results.append("c: " + lyric)
             else:
                 results.append("h: " + lyric)
@@ -64,7 +63,9 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
        
     return(results)
 
+#################################################################################################################
 # Get the total word counts for both classes, as well as an estimation of unknown word counts
+#################################################################################################################
 def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nMinus1GramCounts, \
     hiphop_nGramCounts, hiphop_nMinus1GramCounts):
 
@@ -75,13 +76,13 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
     for gram, count in country_nMinus1GramCounts.items():
         if count <= 5:
             country_estimatedUnknownWordCount += 1
-            country_nMinus1GramCounts.pop(gram)
+            #country_nMinus1GramCounts.pop(gram)
         else:
             country_TotalWordCount += count
     for gram, count in hiphop_nMinus1GramCounts.items():
         if count <= 5:
             hiphop_estimatedUnknownWordCount += 1
-            hiphop_nMinus1GramCounts.pop(gram)
+            #hiphop_nMinus1GramCounts.pop(gram)
         hiphop_TotalWordCount += count
 
     return(country_TotalWordCount, hiphop_TotalWordCount, country_estimatedUnknownWordCount, \
