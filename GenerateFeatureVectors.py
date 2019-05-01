@@ -20,9 +20,6 @@ def nGramCounts(sentences, n):
 
     # For each sentence in the set of sentences
     for words in sentences:
-        #Split the sentence into it's tokens
-        #words = line.split();
-
         # Construct the entries, count the entries, and place in the dictionary
         for i in range(len(words)):
             word = words[i]
@@ -73,9 +70,9 @@ def computeProb_LM(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCo
         print (nMinus1GramCount)
 
 
-def computeProb_Bayes(word, unigramCounts):
+def computeProb_Bayes(word, unigramCounts, unkWordCount):
     if (unigramCounts.get(word) is None):
-        return 1
+        return -log(unkWordCount / len(unigramCounts))
     else:
         wordCount = unigramCounts.get(word)
         return -log(wordCount / len(unigramCounts))

@@ -64,18 +64,18 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             hiphopProb += computeProb_LM(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
 
-        # Extract and use keyword features; add 0.05 to probability for every matching keyword in the
+        # Extract and use keyword features; add to probability for every matching keyword in the
         # corresponding genre
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
             if i == 1:
-                hiphopProb = hiphopProb + 0.1
+                hiphopProb += 0.05
         for i in keywordFeat[1]:
             if i == 1:
-                countryProb = countryProb + 0.5
+                countryProb += 0.05
 
-        countryProb += countryProbs_Bayes[testingEntries.index(entry)]
-        hiphopProb += hiphopProbs_Bayes[testingEntries.index(entry)]
+        countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
+        hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -131,7 +131,7 @@ def calculateSongProbability_BAYES(testingEntries, lyrics, unkWordCount):
         # Loop through all the words in the sentence
         for word in entry.split():
             # Compute probabilities using helper function
-            prob += computeProb_Bayes(word, unigramCounts)
+            prob += computeProb_Bayes(word, unigramCounts, unkWordCount)
         probabilities.append(prob)
 
     return probabilities
@@ -145,7 +145,7 @@ def extractKeywordFeatures(textBlock):
 
     # Extracted from the Internet - need more hip hop keywords?
     hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
-        "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
+        "realest", "homie", "snitch", "biggie", "chains", "grind", "nigga", "shit", "bitch", "skrrt", \
             "never", "fuck", "hit", "money", "ass", "big", "real"]
 
     countryKeywords = ["ride", "baby", "oh", "country", "drinkin", "cowboy", "tailgates" "tobacco", "windows", "blown", \
