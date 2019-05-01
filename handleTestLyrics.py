@@ -1,6 +1,6 @@
 # Name: Palmer Robins & Sara Camili
+from __future__ import division
 from math import log
-from GenerateFeatureVectors import LanguageModel, formatText
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
@@ -40,6 +40,8 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         if counter > 30000:
             break
         # Probability that any given sentence is either country or hip-hop
+        print(len(country_lyrics))
+        print(len(hiphop_lyrics))
         countryProb = -log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
         hiphopProb = -log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
 
