@@ -58,10 +58,10 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
             if i == 1:
-                hiphopProb = hiphopProb + 0.4
+                hiphopProb = hiphopProb + 0.3
         for i in keywordFeat[1]:
             if i == 1:
-                countryProb = countryProb + 0.4
+                countryProb = countryProb + 0.3
 
         # Incorporate Naive Bayes features as well
         #bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
