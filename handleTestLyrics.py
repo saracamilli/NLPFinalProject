@@ -32,6 +32,7 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
     hiphop_estimatedUnknownWordCount = wordCounts[3]
 
     results = []    # Stores newly classified test sentences
+
     counter = 0
     for entry in testingEntries:
         if counter > 30000:
@@ -50,6 +51,17 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
                                        country_TotalWordCount, country_estimatedUnknownWordCount)
             hiphopProb += computeProb(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
+
+        # Extract and use keyword features; add 0.05 to probability for every matching keyword in the
+        # corresponding genre
+        keywordFeat = extractKeywordFeatures(words)
+        for i in keywordFeat[0]:
+            if i == 1:
+                hiphopProb = hiphopProb + 0.4
+        for i in keywordFeat[1]:
+            if i == 1:
+                countryProb = countryProb + 0.4
+
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
         elif (hiphopProb > countryProb):

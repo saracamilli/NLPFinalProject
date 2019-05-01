@@ -42,9 +42,6 @@ def main():
 
     # TESTING
     results = calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_lyrics)
-
-    
-
     printStatistics(results, testingEntries)
 
 ###############################################################################################################
