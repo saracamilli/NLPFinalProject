@@ -73,19 +73,9 @@ def computeProb_LM(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCo
         print (nMinus1GramCount)
 
 
-def computeProb_Bayes(word, classifier, hiphop_unigramCounts, country_unigramCounts):
-    # If hip-hop...
-    if (classifier):
-        if (hiphop_unigramCounts.get(word) is None):
-            return(1)
-        else:
-            wordCount = hiphop_unigramCounts.get(word)
-            return(log(wordCount / len(hiphop_unigramCounts)))
-
-    # If we made it here, then country...
+def computeProb_Bayes(word, unigramCounts):
+    if (unigramCounts.get(word) is None):
+        return 1
     else:
-        if(country_unigramCounts.get(word) is None):
-            return(1)
-        else:
-            wordCount = country_unigramCounts.get(word)
-            return(log(wordCount / len(country_unigramCounts)))
+        wordCount = unigramCounts.get(word)
+        return -log(wordCount / len(unigramCounts))

@@ -25,8 +25,6 @@ def printStatistics(results, testingEntries):
     for entry in testingEntries:
         if counter >= 30000:
             break
-        print(len(results))
-        print(counter)
         print("Testing Entry With Label: " + entry)
         if (entry[0] == 'c'):
             print("Testing Entry Recognized as Country")
@@ -60,10 +58,10 @@ def printStatistics(results, testingEntries):
     accuracy = (c_truePos + c_trueNeg) / (c_trueNeg + c_truePos + c_falseNeg + c_falsePos)
     print("ACCURACY: " + str(accuracy))
 
-    precision = reportPrecision(c_truePos, c_trueNeg)
+    precision = reportPrecision(h_truePos, h_trueNeg)
     print("PRECISION: " + str(precision))
 
-    recall = reportRecall(c_truePos, c_falseNeg)
+    recall = reportRecall(h_truePos, h_falseNeg)
     print("RECALL: " + str(recall))
 
     f1Measure = reportF1(precision, recall)

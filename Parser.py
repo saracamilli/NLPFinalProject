@@ -5,10 +5,7 @@ import string
 
 import nltk
 from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-from nltk.stem.porter import PorterStemmer
-from nltk.corpus import stopwords
-#nltk.download('stopwords')
+
 
 ###############################################################################################################
 # @brief Given a filename corresponding to the selected csv file of lyrics, this function attempts to open
@@ -16,16 +13,13 @@ from nltk.corpus import stopwords
 ###############################################################################################################
 
 def readCSVFile(filename):
-    print ("Reading in the training csv file...")
-    entries = []
 
+    entries = []
     try:
         with open(filename, 'r') as lyricsFile:
             # creating a csv reader object
             csvreader = csv.reader(lyricsFile)
-
-            # extracting field names through first row
-            fields = next(csvreader)
+            next(csvreader)
 
             # extracting each data row containing country/hip-hop lyrics, one by one
             for entry in csvreader:
@@ -46,35 +40,22 @@ def readCSVFile(filename):
         print("Filename requested: " + filename)
         exit(1)
 
-    print("Done reading the training file!")
-
     return entries
 
 def formatText(lyrics):
     formattedLyrics = []
-    porter = PorterStemmer()
-    lemmatizer = WordNetLemmatizer()
-    counter = 0
     for lyric in lyrics:
-        if counter > 10:
-            exit(1)
         if lyrics.index(lyric) > 30000:
             break
         try:
             # Tokenize the lyric
             tokens = word_tokenize(lyric)
-            # Convert to lower case & stem
-            tokens = [porter.stem(t) for t in tokens]
-            #remove punctuation from each word
+            # Remove punctuation from each word
             table = str.maketrans('','', string.punctuation)
             stripped = [w.translate(table) for w in tokens]
             #remove all tokens that are not alphabetic
             words = [word for word in stripped if word.isalpha()]
-            stop_words = set(stopwords.words('english'))
-            words = [w for w in tokens if not w in stop_words]
             formattedLyrics.append(words)
-            print(words)
-            counter += 1
         except UnicodeDecodeError as e:
             continue
     return formattedLyrics

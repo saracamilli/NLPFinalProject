@@ -14,11 +14,12 @@ import random
 # line and computing a probability of that bi/unigram being in each category using the Katz-Backoff probabilities
 # in the dictionary
 #################################################################################################################
-def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_lyrics):
+def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics):
 
-    n = 2   # bigram model
+    n = 2
 
     # Get nGram counts for country training data
+    print("Getting nGram and word counts...")
     country_nGramCounts = nGramCounts(country_lyrics, n)
     country_nMinus1GramCounts = nGramCounts(country_lyrics, n - 1)
     # Get nGram counts for hip-hop training data
@@ -27,26 +28,28 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
 
     # Get total and estimated word counts using helper function
     wordCounts = getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nMinus1GramCounts, \
-        hiphop_nGramCounts, hiphop_nMinus1GramCounts)
+                               hiphop_nGramCounts, hiphop_nMinus1GramCounts)
     country_TotalWordCount = wordCounts[0]
     hiphop_TotalWordCount = wordCounts[1]
     country_estimatedUnknownWordCount = wordCounts[2]
     hiphop_estimatedUnknownWordCount = wordCounts[3]
+    print("Done getting nGram and word counts!")
 
     # Incorporate Naive Bayes features as well
-    bayes_probs = calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics)
-    countryProbs_Bayes = bayes_probs[0]
-    hiphopProbs_Bayes = bayes_probs[1]
+    print("Calculating Naive-Bayes probabilities...")
+    countryProbs_Bayes = calculateSongProbability_BAYES(testingEntries, country_lyrics, country_estimatedUnknownWordCount)
+    hiphopProbs_Bayes = calculateSongProbability_BAYES(testingEntries, hiphop_lyrics, hiphop_estimatedUnknownWordCount)
+    print("Done calculating Naive-Bayes probabilities!")
 
     results = []    # Stores newly classified test sentences
 
     counter = 0
+    print("Calculating final probabilities using keywords, NB, and LMs...")
     for entry in testingEntries:
         if counter > 30000:
             break
+
         # Probability that any given sentence is either country or hip-hop
-        print(len(country_lyrics))
-        print(len(hiphop_lyrics))
         countryProb = -log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
         hiphopProb = -log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
 
@@ -66,13 +69,13 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
             if i == 1:
-                hiphopProb = hiphopProb + 0.3
+                hiphopProb = hiphopProb + 0.1
         for i in keywordFeat[1]:
             if i == 1:
-                countryProb = countryProb + 0.3
+                countryProb = countryProb + 0.5
 
-        countryProb = countryProb + countryProbs_Bayes[testingEntries.index(entry)]
-        hiphopProb = hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]
+        countryProb += countryProbs_Bayes[testingEntries.index(entry)]
+        hiphopProb += hiphopProbs_Bayes[testingEntries.index(entry)]
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -84,8 +87,9 @@ def calculateSongProbability_LANG_MODEL(testingEntries, country_lyrics, hiphop_l
             else:
                 results.append("h: " + lyric)
         counter += 1
+    print("Done calculating final probabilities!")
 
-    return(results)
+    return results
 
 #################################################################################################################
 # Get the total word counts for both classes, as well as an estimation of unknown word counts
@@ -114,32 +118,23 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
 # Given counts of all the unigrams, along with the overall size of the vocabulary in the text,
 # generate probabilities using Naive Bayes with unigram features..
 #################################################################################################################
-def calculateSongProbability_BAYES(testingEntries, country_lyrics, hiphop_lyrics):
+def calculateSongProbability_BAYES(testingEntries, lyrics, unkWordCount):
 
-    # Get unigram counts of each category 
-    hiphop_unigramCounts = nGramCounts(country_lyrics, 1)
-    country_unigramCounts = nGramCounts(hiphop_lyrics, 1)
+    # Get unigram counts
+    unigramCounts = nGramCounts(lyrics, 1)
 
-    country_probs = []
-    hiphop_probs = []
+    probabilities = []
 
     # Loop through all lyrical entries
     for entry in testingEntries:
-
-        hiphopProb = 0
-        countryProb = 0
+        prob = 0
         # Loop through all the words in the sentence
         for word in entry.split():
-
             # Compute probabilities using helper function
-            hiphopProb = hiphopProb + computeProb_Bayes(word, True, hiphop_unigramCounts, country_unigramCounts)
-            countryProb = countryProb + computeProb_Bayes(word, False, hiphop_unigramCounts, country_unigramCounts)
-        
-        # Invert the log probabilities
-        country_probs.append(-countryProb)
-        hiphop_probs.append(-hiphopProb)
+            prob += computeProb_Bayes(word, unigramCounts)
+        probabilities.append(prob)
 
-    return(country_probs, hiphop_probs)
+    return probabilities
 
 #################################################################################################################
 # Given a text block, extracts presence of keywords for both hip hop and country features and creates two
@@ -153,11 +148,11 @@ def extractKeywordFeatures(textBlock):
         "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
             "never", "fuck", "hit", "money", "ass", "big", "real"]
 
-    countryKeywords = ["ride", "baby", "oh", "tobacco", "windows", "blown", \
-        "road", "memory", "drunk", "got", "know", "highway", "cold", "beer" \
-            "little", "away", "dirt", "town", "chew", "whoa", "plane", "southern", "south" \
-                "redneck", "springsteen", "cruise", "truck", "headlights", "town" \
-                    "radio", "hey", "rolling", "song", "round", "til", "lane", "wind"]
+    countryKeywords = ["ride", "baby", "oh", "country", "drinkin", "cowboy", "tailgates" "tobacco", "windows", "blown", \
+        "road", "memory", "drunk", "hotties", "got", "know", "highway", "cold", "beer", "whiskey" \
+            "little", "away", "dirt", "mud", "town", "chew", "whoa", "plane", "southern", "south", "chevy" \
+                "redneck", "springsteen", "cruise", "truck", "headlights", "town", "ford" \
+                    "radio", "rodeo", "hey", "rolling", "song", "round", "til", "lane", "wind", "backwoods", "boondocks"]
 
     # Define and initialize feature vectors with 0's
     hipHopFeatureVect = []
