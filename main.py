@@ -6,7 +6,6 @@ import csv
 import random
 
 from Parser import formatText, readCSVFile
-from GenerateFeatureVectors import computeProb, nGramCounts
 from handleTestLyrics import calculateSongProbability_LANG_MODEL, calculateSongProbability_BAYES, \
     extractKeywordFeatures
 from statistics import printStatistics
