@@ -3,10 +3,8 @@ from __future__ import division
 
 import nltk
 
-import codecs
-from nltk.tokenize import PunktSentenceTokenizer,sent_tokenize, word_tokenize
-from nltk.corpus import stopwords, wordnet
-from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.corpus import wordnet
+
 from math import log
 # nltk.download('wordnet')
 

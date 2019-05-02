@@ -15,7 +15,6 @@ import random
 # in the dictionary
 #################################################################################################################
 def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics):
-
     n = 2
 
     # Get nGram counts for country training data
@@ -64,6 +63,10 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             hiphopProb += computeProb_LM(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
 
+        # Use both Naive Bayes and LM probabilities together
+        countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
+        hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
+
         # Extract and use keyword features; add to probability for every matching keyword in the
         # corresponding genre
         keywordFeat = extractKeywordFeatures(words)
@@ -73,9 +76,6 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
         for i in keywordFeat[1]:
             if i == 1:
                 countryProb += 0.05
-
-        countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
-        hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
 
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
@@ -146,13 +146,13 @@ def extractKeywordFeatures(textBlock):
     # Extracted from the Internet - need more hip hop keywords?
     hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
         "realest", "homie", "snitch", "biggie", "chains", "grind", "nigga", "shit", "bitch", "skrrt", \
-            "never", "fuck", "hit", "money", "ass", "big", "real"]
+            "never", "fuck", "money", "ass", "hood", "ima"]
 
-    countryKeywords = ["ride", "baby", "oh", "country", "drinkin", "cowboy", "tailgates" "tobacco", "windows", "blown", \
-        "road", "memory", "drunk", "hotties", "got", "know", "highway", "cold", "beer", "whiskey" \
-            "little", "away", "dirt", "mud", "town", "chew", "whoa", "plane", "southern", "south", "chevy" \
+    countryKeywords = ["country", "drinkin", "cowboy", "tailgates" "tobacco", \
+         "memory", "drunk", "hotties", "highway", "beer", "whiskey" \
+            "little", "away", "dirt", "mud", "chew", "whoa", "southern", "south", "chevy" \
                 "redneck", "springsteen", "cruise", "truck", "headlights", "town", "ford" \
-                    "radio", "rodeo", "hey", "rolling", "song", "round", "til", "lane", "wind", "backwoods", "boondocks"]
+                    "radio", "rodeo", "song", "holler", "backwoods", "boondocks"]
 
     # Define and initialize feature vectors with 0's
     hipHopFeatureVect = []

@@ -25,27 +25,18 @@ def printStatistics(results, testingEntries):
     for entry in testingEntries:
         if counter >= 30000:
             break
-        print("Testing Entry With Label: " + entry)
         if (entry[0] == 'c'):
-            print("Testing Entry Recognized as Country")
-            print("Results Entry Should Match: " + results[counter])
             if (results[counter][0] == 'c'):
-                print("Correctly Classified as Country")
                 c_truePos += 1
                 h_trueNeg += 1
             else:
-                print("Incorrectly Classified as Hip-Hop")
                 c_falseNeg += 1
                 h_falsePos += 1
         else:
-            print("Testing Entry Recognized as Hip-Hop")
-            print("Results Entry Should Match: " + results[counter])
             if (results[counter][0] == 'h'):
-                print("Correctly Classified as Hip-Hop")
                 h_truePos += 1
                 c_trueNeg += 1
             else:
-                print("Incorrectly Classified as Country")
                 h_falseNeg += 1
                 c_falsePos += 1
         counter += 1
@@ -55,6 +46,7 @@ def printStatistics(results, testingEntries):
     print("Country True Neg: " + str(c_trueNeg))
     print("Country False Pos: " + str(c_falsePos))
     print("Country False Neg: " + str(c_falseNeg))
+
     accuracy = (c_truePos + c_trueNeg) / (c_trueNeg + c_truePos + c_falseNeg + c_falsePos)
     print("ACCURACY: " + str(accuracy))
 
@@ -66,8 +58,6 @@ def printStatistics(results, testingEntries):
 
     f1Measure = reportF1(precision, recall)
     print("F1 MEASURE: " + str(f1Measure))
-
-
 
 # Given counts of true positives and false positives, calculates and returns a precision value
 def reportPrecision(truePositives, falsePositives):

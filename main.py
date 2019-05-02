@@ -4,11 +4,10 @@
 import csv
 
 from Parser import formatText, readCSVFile
-from handleTestLyrics import calculateTestingProbabilities, extractKeywordFeatures
+from handleTestLyrics import calculateTestingProbabilities
 from statistics import printStatistics
 
 def main():
-    n = 2
     country_lyrics = []     # Stores all testing country lyrics
     hiphop_lyrics = []      # Stores all testing hip-hop lyrics
 
