@@ -67,14 +67,19 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
             if i == 1:
-                hiphopProb = hiphopProb + 0.1
+                hiphopProb += 0.05
         for i in keywordFeat[1]:
             if i == 1:
-                countryProb = countryProb + 0.5
+                countryProb += 0.05
 
+<<<<<<< HEAD
         # Add the Bayes probability and the Language Model probabilities (with keyword added)
         countryProb += countryProbs_Bayes[testingEntries.index(entry)]
         hiphopProb += hiphopProbs_Bayes[testingEntries.index(entry)]
+=======
+        countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
+        hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
+>>>>>>> b172a7476e9080d79a14634b6654a009e2d5dfc1
 
         # Compare probabilities
         if (countryProb > hiphopProb):
@@ -132,7 +137,7 @@ def calculateSongProbability_BAYES(testingEntries, lyrics, unkWordCount):
         # Loop through all the words in the sentence
         for word in entry.split():
             # Compute probabilities using helper function
-            prob += computeProb_Bayes(word, unigramCounts)
+            prob += computeProb_Bayes(word, unigramCounts, unkWordCount)
         probabilities.append(prob)
 
     return probabilities
@@ -146,7 +151,7 @@ def extractKeywordFeatures(textBlock):
 
     # Extracted from the Internet - need more hip hop keywords?
     hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
-        "realest", "homie", "snitch", "biggie", "grind", "nigga", "shit", "bitch", "skrrt", \
+        "realest", "homie", "snitch", "biggie", "chains", "grind", "nigga", "shit", "bitch", "skrrt", \
             "never", "fuck", "hit", "money", "ass", "big", "real"]
 
     countryKeywords = ["ride", "baby", "oh", "country", "drinkin", "cowboy", "tailgates" "tobacco", "windows", "blown", \
