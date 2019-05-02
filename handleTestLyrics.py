@@ -4,7 +4,7 @@ from math import log
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
-from GenerateFeatureVectors import nGramCounts, computeProb_LM, computeProb_Bayes
+from helpersForLMAndBayes import nGramCounts, computeProb_LM, computeProb_Bayes
 from math import log
 import random
 
@@ -72,14 +72,8 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             if i == 1:
                 countryProb += 0.05
 
-<<<<<<< HEAD
-        # Add the Bayes probability and the Language Model probabilities (with keyword added)
-        countryProb += countryProbs_Bayes[testingEntries.index(entry)]
-        hiphopProb += hiphopProbs_Bayes[testingEntries.index(entry)]
-=======
         countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
         hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
->>>>>>> b172a7476e9080d79a14634b6654a009e2d5dfc1
 
         # Compare probabilities
         if (countryProb > hiphopProb):
