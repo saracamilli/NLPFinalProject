@@ -72,7 +72,9 @@ def computeProb_LM(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCo
         print(history)
         print (nMinus1GramCount)
 
-
+#################################################################################################################
+ # Given counts of all unigrams, along with a given word, generates a probability using Naive Bayes 
+ #################################################################################################################
 def computeProb_Bayes(word, unigramCounts):
     if (unigramCounts.get(word) is None):
         return 1

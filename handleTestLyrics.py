@@ -9,10 +9,8 @@ from math import log
 import random
 
 #################################################################################################################
-# Given a new tester sentence, this helper function uses the probability dictionaries to compute the probability
-# of a given sentence being from a country and hip hop song. Does this by going through each bi/unigram in the
-# line and computing a probability of that bi/unigram being in each category using the Katz-Backoff probabilities
-# in the dictionary
+# Given new tester entries, this function computes the probability of each given lyric being from a country or 
+#  ahip hop song. It does this by going computing 
 #################################################################################################################
 def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics):
 
@@ -49,7 +47,7 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
         if counter > 30000:
             break
 
-        # Probability that any given sentence is either country or hip-hop
+        # Probability that any given sentence is either country or hip-hop (category probability)
         countryProb = -log(len(country_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
         hiphopProb = -log(len(hiphop_lyrics) / (len(country_lyrics) + len(hiphop_lyrics)))
 
@@ -64,7 +62,7 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             hiphopProb += computeProb_LM(nGram, hiphop_nGramCounts.get(nGram), hiphop_nMinus1GramCounts.get(history),
                                       hiphop_TotalWordCount, hiphop_estimatedUnknownWordCount)
 
-        # Extract and use keyword features; add 0.05 to probability for every matching keyword in the
+        # Extract and use keyword features; add to probability for every matching keyword in the
         # corresponding genre
         keywordFeat = extractKeywordFeatures(words)
         for i in keywordFeat[0]:
@@ -74,9 +72,11 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             if i == 1:
                 countryProb = countryProb + 0.5
 
+        # Add the Bayes probability and the Language Model probabilities (with keyword added)
         countryProb += countryProbs_Bayes[testingEntries.index(entry)]
         hiphopProb += hiphopProbs_Bayes[testingEntries.index(entry)]
 
+        # Compare probabilities
         if (countryProb > hiphopProb):
             results.append("c: " + lyric)
         elif (hiphopProb > countryProb):
@@ -101,6 +101,7 @@ def getWordCounts(country_lyrics, hiphop_lyrics, country_nGramCounts, country_nM
     hiphop_TotalWordCount = 0
     country_estimatedUnknownWordCount = 0
     hiphop_estimatedUnknownWordCount = 0
+
     for count in country_nMinus1GramCounts.values():
         if count <= 5:
             country_estimatedUnknownWordCount += 1
