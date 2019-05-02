@@ -37,11 +37,11 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
     hiphop_estimatedUnknownWordCount = wordCounts[3]
     print("Done getting nGram and word counts!")
 
-    # Calculate average word/lines length means of each corpus 
-    meanWordLength_country = calculateAvgWordLength(country_lyrics)
-    meanWordLength_hiphop = calculateAvgWordLength(hiphop_lyrics)
-    meanLineLength_country = calculateAvgLineLength(country_lyrics)
-    meanLineLength_hiphop = calculateAvgLineLength(hiphop_lyrics)
+    # Calculate average word/lines length means of each corpus - uncomment to include this! 
+    #meanWordLength_country = calculateAvgWordLength(country_lyrics)
+    #meanWordLength_hiphop = calculateAvgWordLength(hiphop_lyrics)
+    #meanLineLength_country = calculateAvgLineLength(country_lyrics)
+    #meanLineLength_hiphop = calculateAvgLineLength(hiphop_lyrics)
 
     # Incorporate Naive Bayes features as well
     print("Calculating Naive-Bayes probabilities...")
@@ -82,6 +82,7 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             if i == 1:
                 countryProb += 0.05
 
+        # UNCOMMENT THE SECTIONS BELOW to include average word length and average line length features
         # Calculate whether entry is more likely to be country or hip hop on the basis of avg. word length
         #distrWord = calcMoreLikelyWordLengthDistrib(meanWordLength_country, meanWordLength_hiphop, entry)
         #if distrWord == "country":
@@ -231,10 +232,12 @@ def calcMoreLikelyWordLengthDistrib(meanWordLength_country, meanWordLength_hipho
     diffFromHiphop = abs(meanWordLength_hiphop - meanWordLength_tester)
 
     # Compare the differences to each category and return category with smallest distance
-    if ((diffFromCountry > diffFromHiphop) and (abs(diffFromCountry - diffFromHiphop) > 0.5)):
-        return("hiphop")
-    elif (diffFromCountry < diffFromHiphop and (abs(diffFromCountry - diffFromHiphop) > 0.5)):
-        return("country")
+    if (diffFromCountry > diffFromHiphop):
+        if (diffFromHiphop < 0.5):
+            return("hiphop")
+    elif (diffFromCountry < diffFromHiphop):
+        if (diffFromCountry < 0.5):
+            return("country")
     else:
         return("same")
 
@@ -270,10 +273,12 @@ def calcMoreLikelyLineLengthDistrib(meanLineLength_country, meanLineLength_hipho
     diffFromHiphop = abs(meanLineLength_hiphop - meanLineLength_tester)
 
     # Compare the differences to each category and return category with smallest distance
-    if ((diffFromCountry > diffFromHiphop) and (abs(diffFromCountry - diffFromHiphop) > 0.3)):
-        return("hiphop")
-    elif (diffFromCountry < diffFromHiphop and (abs(diffFromCountry - diffFromHiphop) > 0.3)):
-        return("country")
+    if (diffFromCountry > diffFromHiphop):
+        if (diffFromHiphop < 0.3):
+            return("hiphop")
+    elif (diffFromCountry < diffFromHiphop):
+        if (diffFromCountry < 0.3):
+            return("country")
     else:
         return("same")
 
