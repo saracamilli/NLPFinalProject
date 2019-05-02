@@ -1,12 +1,16 @@
 # Name: Palmer Robins & Sara Camili
-from __future__ import division
-from math import log
 
 # THIS FILE HANDLES UNSEEN LYRICS
 
+from __future__ import division
 from helpersForLMAndBayes import nGramCounts, computeProb_LM, computeProb_Bayes
 from math import log
+from numpy import mean, std
+import nltk
+from nltk.corpus import stopwords, wordnet
+from nltk.stem import WordNetLemmatizer, PorterStemmer
 import random
+
 
 #################################################################################################################
 # Given new tester entries, this function computes the probability of each given lyric being from a country or 
@@ -32,6 +36,12 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
     country_estimatedUnknownWordCount = wordCounts[2]
     hiphop_estimatedUnknownWordCount = wordCounts[3]
     print("Done getting nGram and word counts!")
+
+    # Calculate average word/lines length means of each corpus 
+    meanWordLength_country = calculateAvgWordLength(country_lyrics)
+    meanWordLength_hiphop = calculateAvgWordLength(hiphop_lyrics)
+    meanLineLength_country = calculateAvgLineLength(country_lyrics)
+    meanLineLength_hiphop = calculateAvgLineLength(hiphop_lyrics)
 
     # Incorporate Naive Bayes features as well
     print("Calculating Naive-Bayes probabilities...")
@@ -72,6 +82,21 @@ def calculateTestingProbabilities(testingEntries, country_lyrics, hiphop_lyrics)
             if i == 1:
                 countryProb += 0.05
 
+        # Calculate whether entry is more likely to be country or hip hop on the basis of avg. word length
+        #distrWord = calcMoreLikelyWordLengthDistrib(meanWordLength_country, meanWordLength_hiphop, entry)
+        #if distrWord == "country":
+            #countryProb += 0.05
+        #if distrWord == "hiphop":
+            #hiphopProb += 0.05
+        
+        # Calculate whether entry is more likely to be country or hip hop on the basis of avg. line length
+        #distrLine = calcMoreLikelyLineLengthDistrib(meanLineLength_country, meanLineLength_hiphop, entry)
+        #if distrLine == "country":
+            #countryProb += 0.05
+        #if distrLine == "hiphop":
+            #hiphopProb += 0.05   
+
+        # Incorporate Naive Bayes
         countryProb = (countryProb + countryProbs_Bayes[testingEntries.index(entry)]) / 2
         hiphopProb = (hiphopProb + hiphopProbs_Bayes[testingEntries.index(entry)]) / 2
 
@@ -139,20 +164,22 @@ def calculateSongProbability_BAYES(testingEntries, lyrics, unkWordCount):
 #################################################################################################################
 # Given a text block, extracts presence of keywords for both hip hop and country features and creates two
 # feature vectors which it returns as (hip hop vector, country vector)
-# TODO: should we change this to frequency, or is presence good enough?
 #################################################################################################################
 def extractKeywordFeatures(textBlock):
 
     # Extracted from the Internet - need more hip hop keywords?
     hipHopKeywords = ["chopper", "stunting", "flexing", "mane", "trill", "trapping", "balling" \
         "realest", "homie", "snitch", "biggie", "chains", "grind", "nigga", "shit", "bitch", "skrrt", \
-            "never", "fuck", "hit", "money", "ass", "big", "real"]
+            "never", "fuck", "hit", "money", "ass", "big", "real", "motherfucker", "hustle", \
+                "cigarette", "war", "bullet", "slap", "dick", "suicide", "murder", "shawty", "New York", \
+                    "Los Angeles", "Harlem", "Compton"]
 
     countryKeywords = ["ride", "baby", "oh", "country", "drinkin", "cowboy", "tailgates" "tobacco", "windows", "blown", \
         "road", "memory", "drunk", "hotties", "got", "know", "highway", "cold", "beer", "whiskey" \
             "little", "away", "dirt", "mud", "town", "chew", "whoa", "plane", "southern", "south", "chevy" \
                 "redneck", "springsteen", "cruise", "truck", "headlights", "town", "ford" \
-                    "radio", "rodeo", "hey", "rolling", "song", "round", "til", "lane", "wind", "backwoods", "boondocks"]
+                    "radio", "rodeo", "hey", "rolling", "song", "round", "til", "lane", "wind", "backwoods", "boondocks", \
+                        "summer", "Georgia", "Alabama", "Carolina", "Tennessee", "Kentucky", "Shenandoah"]
 
     # Define and initialize feature vectors with 0's
     hipHopFeatureVect = []
@@ -161,13 +188,16 @@ def extractKeywordFeatures(textBlock):
     for i in range(len(countryKeywords)): countryFeatureVect.append(0)
 
     # Update the feature vectors
-        # NOTE: the words are not filtered because, esp. in the case of hip hop, the
-        # suffixes can be meaningful (i.e. balling, not ball)
     for word in textBlock:
         # Check if the current word is in hip hop keywords list
-        if word in hipHopKeywords:
+        if (word in hipHopKeywords):
             # If it is, replace its 0 in the vector with a 1
             index = hipHopKeywords.index(word)
+            hipHopFeatureVect[index] = 1
+        
+        if (filter(word) in hipHopKeywords):
+            # If it is, replace its 0 in the vector with a 1
+            index = hipHopKeywords.index(filter(word))
             hipHopFeatureVect[index] = 1
 
         # Check if the current word is in country keywords list
@@ -175,5 +205,110 @@ def extractKeywordFeatures(textBlock):
             # If it is, replace its 0 in the vector with a 1
             index = countryKeywords.index(word)
             countryFeatureVect[index] = 1
+        
+        if (filter(word) in countryKeywords):
+            # If it is, replace its 0 in the vector with a 1
+            index = countryKeywords.index(filter(word))
+            countryFeatureVect[index] = 1
 
     return(hipHopFeatureVect, countryFeatureVect)
+
+
+#################################################################################################################
+# Given average country and hip hop mean word lengths along with an unknown lyrical entry, calculates whether 
+# the unknown entry is more similar to country or to hip hop on the basis of word length
+#################################################################################################################
+def calcMoreLikelyWordLengthDistrib(meanWordLength_country, meanWordLength_hiphop, entry):
+    
+    # Loop through words in the entry and calculate the mean length
+    wordLengths_tester = []
+    for word in entry.split():
+        wordLengths_tester.append(len(word))
+    meanWordLength_tester = mean(wordLengths_tester)
+
+    # Calculate the difference in mean word length between the average for each category
+    diffFromCountry = abs(meanWordLength_country - meanWordLength_tester)
+    diffFromHiphop = abs(meanWordLength_hiphop - meanWordLength_tester)
+
+    # Compare the differences to each category and return category with smallest distance
+    if ((diffFromCountry > diffFromHiphop) and (abs(diffFromCountry - diffFromHiphop) > 0.5)):
+        return("hiphop")
+    elif (diffFromCountry < diffFromHiphop and (abs(diffFromCountry - diffFromHiphop) > 0.5)):
+        return("country")
+    else:
+        return("same")
+
+#################################################################################################################
+# Give a set of lyrics (either hip hop or country), calculates the average word length (which is returned). We 
+# will assume that word length is normally distributed around this mean. This will be used to determine which 
+# distribution a new phrase is most likely to have drawn from.
+#################################################################################################################
+def calculateAvgWordLength(lyrics):
+
+    words = []          # a list of all the word lengths in the set of lyrics
+
+    for sentence in lyrics:        
+        for word in sentence:
+            words.append(len(word))
+        
+    avgWordLength = mean(words)
+
+    return(avgWordLength)
+
+#################################################################################################################
+# Given country and hip hop mean line lengths along with an unknown lyrical entry, calculates whether the unknown 
+# entry is more similar to country or to hip hop on the basis of line length
+#################################################################################################################
+def calcMoreLikelyLineLengthDistrib(meanLineLength_country, meanLineLength_hiphop, entry):
+    
+    # Calculate length of entry
+    lineLengths_tester = len(entry)
+    meanLineLength_tester = mean(lineLengths_tester)
+
+    # Calculate the difference in mean line length between the average for each category
+    diffFromCountry = abs(meanLineLength_country - meanLineLength_tester)
+    diffFromHiphop = abs(meanLineLength_hiphop - meanLineLength_tester)
+
+    # Compare the differences to each category and return category with smallest distance
+    if ((diffFromCountry > diffFromHiphop) and (abs(diffFromCountry - diffFromHiphop) > 0.3)):
+        return("hiphop")
+    elif (diffFromCountry < diffFromHiphop and (abs(diffFromCountry - diffFromHiphop) > 0.3)):
+        return("country")
+    else:
+        return("same")
+
+#################################################################################################################
+# Give a set of lyrics (either hip hop or country), calculates the average line length (which is returned). We 
+# will assume that line length is normally distributed around this mean. This will be used to determine which 
+# distribution a new phrase is most likely to have drawn from.
+#################################################################################################################
+def calculateAvgLineLength(lyrics):
+
+    lines = []          # a list of all the line lengths in the set of lyrics
+
+    for sentence in lyrics:        
+        lines.append(len(sentence))
+        
+    avgLineLength = mean(lines)
+
+    return(avgLineLength)
+
+#################################################################################################################    
+# Given an input word, returns a token that is "stemmed" & "lemmatized" (contains only
+# the morphologically correct root word of the original word)
+#################################################################################################################
+def filter(inputWord):
+
+	filteredWord = ""		# Will hold the new root word from orig. word
+
+	lemmatizer = WordNetLemmatizer()
+	porterStemmer = PorterStemmer()
+
+	stopWords = set(stopwords.words("english"))		# set stop words (high frequency words that don't contribute
+													# to meaning of sentence, such as 'a', 'the', 'an', etc.)
+
+	if (inputWord not in stopWords):						# if not a stop word
+		psw = porterStemmer.stem(inputWord)				# stem the word
+		filteredWord = lemmatizer.lemmatize(psw)	# append the lemmatized and stemmed word
+
+	return (filteredWord)
