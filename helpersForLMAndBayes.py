@@ -2,7 +2,6 @@
 from __future__ import division
 
 import nltk
-
 from nltk.corpus import wordnet
 
 from math import log
@@ -68,7 +67,7 @@ def computeProb_LM(entry, nGramCount, nMinus1GramCount, vocabSize, unknownWordCo
         print (nMinus1GramCount)
 
 #################################################################################################################
- # Given counts of all unigrams, along with a given word, generates a probability using Naive Bayes 
+ # Given counts of all unigrams, along with a given word, generates a probability using Naive Bayes
  #################################################################################################################
 def computeProb_Bayes(word, unigramCounts, unkWordCount):
     if (unigramCounts.get(word) is None):

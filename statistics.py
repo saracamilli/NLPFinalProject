@@ -1,9 +1,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import nltk
-from nltk.metrics import *
-
 import sys
 import random
 
